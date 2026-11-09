@@ -42,7 +42,7 @@ export async function getReadiness(projectKey: string, release: string) {
   const snap = await buildSnapshot(projectKey, release);
   const gate = evaluateGate(snap, getProfile(snap.profileId || 'iso26262'));
   const hash = hashSnapshot(snap, gate);
-  await putStoredSnapshot(projectKey, release, { snap, gate, hash, at: snap.takenAt });
+  await putStoredSnapshot(projectKey, release, { gate, hash, at: snap.takenAt });
   return { snap, gate, hash };
 }
 

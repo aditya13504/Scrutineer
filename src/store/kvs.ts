@@ -10,8 +10,8 @@ export interface Settings {
   ingestToken: string;
   profileId: 'iso26262';
 }
-export interface StoredSnapshot { snap: TraceSnapshot; gate: GateResult; hash: string; at: string }
-export interface EvidenceRecord { url: string; title: string; hash: string; verdict: GateResult['verdict']; at: string; by: string; release: string }
+export interface StoredSnapshot { snap?: TraceSnapshot; gate: GateResult; hash: string; at: string }
+export interface EvidenceRecord { url: string; title: string; hash: string; verdict: GateResult['verdict']; at: string; by: string; release: string; snapshotId: string }
 export interface Signoff { role: 'Safety Manager' | 'Test Lead' | 'Release Manager'; accountId: string; name: string; at: string; hash: string }
 export interface DemoStatus { state: 'idle' | 'running' | 'created' | 'exists' | 'partial' | 'failed' | 'reset'; projectKey?: string; steps: { name: string; ok: boolean; detail?: string }[]; at: string }
 
@@ -90,3 +90,9 @@ export async function deleteProjectState(projectKey: string): Promise<number> {
   }
   return n;
 }
+
+/** Evidence snapshots are immutable: written once at publish time under their snapshot id, never overwritten. */
+export async function putEvidenceSnapshot(snapshotId: string, s: StoredSnapshot & { snap: TraceSnapshot }): Promise<void> {
+  await kvs.set(safe(`evsnap:${snapshotId}`), s, { keyPolicy: 'FAIL_IF_EXISTS' });
+}
+export const getEvidenceSnapshot = async (snapshotId: string) => (await kvs.get(safe(`evsnap:${snapshotId}`))) as (StoredSnapshot & { snap: TraceSnapshot }) | undefined;

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mkSnap } from './engine/fixtures';
 
+const stored = vi.hoisted(() => ({ last: undefined as unknown }));
 const state = vi.hoisted(() => ({
   settings: { roleFallback: {}, ingestToken: 't', profileId: 'iso26262', defaultProject: 'BBW', demoProject: 'BBW' } as Record<string, unknown>,
   versions: [] as { id: string; name: string; released: boolean; archived?: boolean }[],
@@ -13,7 +14,7 @@ vi.mock('../src/store/kvs', () => ({
   getSettings: async () => state.settings,
   getSignoffs: async () => state.signoffs,
   putSignoffs: async (_p: string, _r: string, s: unknown[]) => { state.signoffs = s; },
-  putStoredSnapshot: async () => undefined,
+  putStoredSnapshot: async (_p: string, _r: string, v: unknown) => { stored.last = v; },
 }));
 vi.mock('../src/jira/client', () => ({
   listVersions: async () => state.versions,
@@ -96,5 +97,14 @@ describe('validateRelease', () => {
   it('allows a release-gate issue whose release is GO', async () => {
     state.issue = issue(['release-gate']);
     expect((await validateRelease({ issue: { key: 'BBW-99' } })).result).toBe(true);
+  });
+});
+
+describe('getReadiness cache (review I7)', () => {
+  it('caches only the gate and hash, not the whole project snapshot', async () => {
+    const { getReadiness } = await import('../src/service');
+    const r = await getReadiness('BBW', 'BBW 2.3');
+    expect(stored.last).toMatchObject({ hash: r.hash });
+    expect(stored.last).not.toHaveProperty('snap');
   });
 });
