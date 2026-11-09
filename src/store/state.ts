@@ -4,12 +4,11 @@
 // either. So everything that must look the same from every surface lives in Jira:
 //   - test executions and suspect flags: issue properties on the test case (scrutineer.exec, scrutineer.suspects)
 //   - sign-offs and evidence records: project properties (scrutineer.signoffs, scrutineer.evidence)
-//   - shared settings: a Forge app property in Jira (scrutineer.settings)
-// Forge KVS keeps only context-local data: the ingest token, the readiness cache, immutable evidence
-// snapshots and demo bookkeeping. The app makes no outbound calls.
+// Forge KVS keeps only context-local data: settings and the ingest token, the readiness cache, immutable
+// evidence snapshots and demo bookkeeping. The app makes no outbound calls.
 import { kvs, WhereConditions } from '@forge/kvs';
 import type { Execution, GateResult, Role, SuspectFlag, TraceSnapshot } from '../engine/types';
-import { getAppProp, getIssueProp, getProjectProp, setAppProp, setIssueProp, setProjectProp } from '../jira/client';
+import { getIssueProp, getProjectProp, setIssueProp, setProjectProp } from '../jira/client';
 import { EXEC_PROP, readListProp, SUSPECT_PROP, type JiraIssue } from '../jira/map';
 
 export interface Settings {
@@ -29,7 +28,6 @@ export interface DemoStatus { state: 'idle' | 'running' | 'created' | 'exists' |
 export const MAX_EXECUTIONS = 50;
 export const MAX_SUSPECTS = 30;
 export const MAX_EVIDENCE = 100;
-const SETTINGS_PROP = 'scrutineer.settings';
 const SIGNOFF_PROP = 'scrutineer.signoffs';
 const EVIDENCE_PROP = 'scrutineer.evidence';
 
@@ -42,29 +40,17 @@ const K = {
 // KVS keys allow a limited charset; release names contain spaces and dots, which are allowed.
 const safe = (s: string) => s.replace(/[^a-zA-Z0-9:._\s\-#]/g, '_');
 
-// ---- Settings: shared part in Jira, ingest token local to the Jira installation that owns the web trigger.
-
-type SharedSettings = Omit<Settings, 'ingestToken'>;
-const SHARED_KEYS = ['defaultProject', 'evidenceSpaceKey', 'demoProject', 'roleFallback', 'profileId'] as const;
-const pickShared = (s: Partial<Settings>): Partial<SharedSettings> =>
-  Object.fromEntries(SHARED_KEYS.filter((k) => s[k] !== undefined).map((k) => [k, s[k]])) as Partial<SharedSettings>;
-
-async function readShared(): Promise<Partial<SharedSettings>> {
-  try { return (await getAppProp<Partial<SharedSettings>>(SETTINGS_PROP)) ?? {}; }
-  catch (e) { console.warn('Scrutineer: shared settings unavailable', String(e)); return {}; }
-}
+// ---- Settings: local to the installation context. Other contexts infer the project (see resolveProject).
 
 export async function getSettings(): Promise<Settings> {
-  const [cur, shared] = await Promise.all([kvs.get(K.settings) as Promise<Partial<Settings> | undefined>, readShared()]);
-  const s: Settings = { roleFallback: {}, profileId: 'iso26262', ...cur, ...shared, ingestToken: cur?.ingestToken ?? crypto.randomUUID() };
-  if (!cur?.ingestToken) await kvs.set(K.settings, { ...cur, ingestToken: s.ingestToken });
+  const cur = (await kvs.get(K.settings)) as Partial<Settings> | undefined;
+  const s: Settings = { roleFallback: {}, profileId: 'iso26262', ...cur, ingestToken: cur?.ingestToken ?? crypto.randomUUID() };
+  if (!cur?.ingestToken) await kvs.set(K.settings, s);
   return s;
 }
 export async function saveSettings(patch: Partial<Omit<Settings, 'ingestToken'>>): Promise<Settings> {
   const s = { ...(await getSettings()), ...patch };
   await kvs.set(K.settings, s);
-  // Other installation contexts fall back to inferring the project from the release name, so don't fail here.
-  try { await setAppProp(SETTINGS_PROP, pickShared(s)); } catch (e) { console.warn('Scrutineer: could not share settings', String(e)); }
   return s;
 }
 

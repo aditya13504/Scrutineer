@@ -5,7 +5,7 @@ import { DEMO_REVIEWERS } from '../demo/dataset';
 import { publishEvidencePack } from '../evidence/publish';
 import { reviewSuspect } from '../impact/apply';
 import { recordBenchRun, recordManual } from '../ingest/record';
-import { assignableUsers, canBrowseProject, getProject, isJiraAdmin } from '../jira/client';
+import { assignableUsers, canBrowseProject, firstTestKey, getProject, isJiraAdmin } from '../jira/client';
 import { ADMIN_RESOLVERS, authorizeAdmin, authorizeProject } from './guards';
 import type { ScrutineerProperty } from '../jira/map';
 import {
@@ -118,7 +118,9 @@ def('getIngestInfo', async () => {
   const s = await getSettings();
   let url = '';
   try { url = await webTrigger.getUrl('results-ingest'); } catch (e) { url = `(unavailable: ${(e as Error).message})`; }
-  return { url, token: s.ingestToken };
+  let exampleTestKey: string | undefined;
+  if (s.defaultProject) { try { exampleTestKey = await firstTestKey(s.defaultProject); } catch { /* example only */ } }
+  return { url, token: s.ingestToken, projectKey: s.defaultProject, exampleTestKey };
 });
 def('reviewerOptions', async (p, c) => {
   const projectKey = await projectOf(p, c);

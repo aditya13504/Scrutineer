@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Live bug: MCP calls ran in a different Forge installation context with its own KVS, so they saw
 // no executions or suspects (NO-GO 65 vs the Control Room's verdict). Shared state now lives in Jira.
-const jira = vi.hoisted(() => ({ issue: {} as Record<string, unknown>, project: {} as Record<string, unknown>, app: {} as Record<string, unknown>, appFails: false }));
+const jira = vi.hoisted(() => ({ issue: {} as Record<string, unknown>, project: {} as Record<string, unknown> }));
 const local = vi.hoisted(() => ({ kv: {} as Record<string, unknown> }));
 
 vi.mock('../../src/jira/client', () => ({
@@ -10,8 +10,6 @@ vi.mock('../../src/jira/client', () => ({
   setIssueProp: async (k: string, p: string, v: unknown) => { jira.issue[`${k}/${p}`] = v; },
   getProjectProp: async (k: string, p: string) => jira.project[`${k}/${p}`],
   setProjectProp: async (k: string, p: string, v: unknown) => { jira.project[`${k}/${p}`] = v; },
-  getAppProp: async (p: string) => { if (jira.appFails) throw new Error('403'); return jira.app[p]; },
-  setAppProp: async (p: string, v: unknown) => { if (jira.appFails) throw new Error('403'); jira.app[p] = v; },
 }));
 vi.mock('@forge/kvs', () => ({
   kvs: { get: async (k: string) => local.kv[k], set: async (k: string, v: unknown) => { local.kv[k] = v; } },
@@ -22,7 +20,7 @@ import { addExecutions, executionsFromIssues, getSettings, getSignoffs, listEvid
 
 const exec = (n: number) => ({ result: 'Passed' as const, version: 'V', executedAt: `2026-11-0${(n % 9) + 1}T00:00:00Z`, source: 'ci' as const, actor: `run ${n}` });
 
-beforeEach(() => { jira.issue = {}; jira.project = {}; jira.app = {}; jira.appFails = false; local.kv = {}; });
+beforeEach(() => { jira.issue = {}; jira.project = {}; local.kv = {}; });
 
 describe('state in Jira', () => {
   it('stores executions on the test issue as { list }, appending and keeping the newest', async () => {
@@ -68,31 +66,15 @@ describe('state in Jira', () => {
   });
 });
 
-describe('settings', () => {
-  it('shares everything but the ingest token through a Jira app property', async () => {
-    await saveSettings({ defaultProject: 'BBW', evidenceSpaceKey: 'BBWSAFE' });
-    expect(jira.app['scrutineer.settings']).toMatchObject({ defaultProject: 'BBW', evidenceSpaceKey: 'BBWSAFE' });
-    expect(jira.app['scrutineer.settings']).not.toHaveProperty('ingestToken');
+describe('settings (local to the installation context)', () => {
+  it('creates and keeps one ingest token', async () => {
+    const a = await getSettings();
+    expect(a.ingestToken).toMatch(/[0-9a-f-]{36}/);
+    expect((await getSettings()).ingestToken).toBe(a.ingestToken);
   });
-
-  it('another installation context (empty KVS) still sees the shared settings', async () => {
-    jira.app['scrutineer.settings'] = { defaultProject: 'BBW', roleFallback: {} };
-    const s = await getSettings();
-    expect(s.defaultProject).toBe('BBW');
-    expect(s.ingestToken).toMatch(/[0-9a-f-]{36}/);
-  });
-
-  it('falls back to local settings when the app property cannot be read', async () => {
-    local.kv.settings = { defaultProject: 'OLD', ingestToken: 'tok', roleFallback: {} };
-    jira.appFails = true;
-    const s = await getSettings();
-    expect(s).toMatchObject({ defaultProject: 'OLD', ingestToken: 'tok' });
-  });
-});
-
-describe('reset and resilience', () => {
-  it('saving settings still succeeds when the shared app property cannot be written', async () => {
-    jira.appFails = true;
-    await expect(saveSettings({ defaultProject: 'BBW' })).resolves.toMatchObject({ defaultProject: 'BBW' });
+  it('saves a patch without touching the token', async () => {
+    const tok = (await getSettings()).ingestToken;
+    await saveSettings({ defaultProject: 'BBW' });
+    expect(await getSettings()).toMatchObject({ defaultProject: 'BBW', ingestToken: tok });
   });
 });

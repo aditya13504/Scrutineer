@@ -41,12 +41,23 @@ export async function searchIssues(jql: string, who: Who = 'app'): Promise<JiraI
 
 export const searchProjectIssues = (projectKey: string) => searchIssues(`project = "${projectKey.replace(/"/g, '')}" ORDER BY key ASC`);
 
-/** Keys of the projects that have issues in a fix version with this exact name (used to infer the project from a release). */
-export async function projectsWithVersion(release: string): Promise<string[]> {
-  const res = await call<{ issues: { fields: { project?: { key: string } } }[] }>('app', route`/rest/api/3/search/jql`, 'POST', {
-    jql: `fixVersion = "${release.replace(/["\\]/g, '')}"`, fields: ['project'], maxResults: 100,
+async function firstIssues(jql: string, max: number): Promise<{ key: string; fields: { project?: { key: string } } }[]> {
+  const res = await call<{ issues: { key: string; fields: { project?: { key: string } } }[] }>('app', route`/rest/api/3/search/jql`, 'POST', {
+    jql, fields: ['project'], maxResults: max,
   });
-  return [...new Set(res.issues.map((i) => i.fields.project?.key).filter((k): k is string => !!k))];
+  return res.issues ?? [];
+}
+const projectsOf = (issues: { fields: { project?: { key: string } } }[]) =>
+  [...new Set(issues.map((i) => i.fields.project?.key).filter((k): k is string => !!k))];
+const q = (s: string) => `"${s.replace(/["\\]/g, '')}"`;
+
+/** Keys of the projects that have issues in a fix version with this exact name (used to infer the project from a release). */
+export const projectsWithVersion = async (release: string) => projectsOf(await firstIssues(`fixVersion = ${q(release)}`, 100));
+/** Keys of the projects that contain Scrutineer trace items (uses the indexed scrutineerRole property). */
+export const projectsWithScrutineerItems = async () => projectsOf(await firstIssues('scrutineerRole IS NOT EMPTY', 100));
+/** The first test case in a project, for examples in the UI. */
+export async function firstTestKey(projectKey: string): Promise<string | undefined> {
+  return (await firstIssues(`project = ${q(projectKey)} AND scrutineerRole = "TC" ORDER BY key ASC`, 1))[0]?.key;
 }
 
 // Shared Scrutineer state lives in Jira entity properties, so every Forge installation context
@@ -63,8 +74,6 @@ export const getIssueProp = <T>(issueKey: string, prop: string) => getEntity<T>(
 export const setIssueProp = (issueKey: string, prop: string, value: unknown) => call<void>('app', route`/rest/api/3/issue/${issueKey}/properties/${prop}`, 'PUT', value);
 export const getProjectProp = <T>(projectKey: string, prop: string) => getEntity<T>(route`/rest/api/3/project/${projectKey}/properties/${prop}`);
 export const setProjectProp = (projectKey: string, prop: string, value: unknown) => call<void>('app', route`/rest/api/3/project/${projectKey}/properties/${prop}`, 'PUT', value);
-export const getAppProp = <T>(prop: string) => getEntity<T>(route`/rest/forge/1/app/properties/${prop}`);
-export const setAppProp = (prop: string, value: unknown) => call<void>('app', route`/rest/forge/1/app/properties/${prop}`, 'PUT', value);
 
 export async function getIssue(key: string, who: Who = 'app'): Promise<JiraIssue> {
   return call<JiraIssue>(who, route`/rest/api/3/issue/${key}?fields=${SEARCH_FIELDS.join(',')}&properties=${PROPERTY_KEY}`);

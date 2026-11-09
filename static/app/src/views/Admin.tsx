@@ -5,7 +5,7 @@ import { Toast } from '../components/ui';
 
 export function Admin() {
   const [settings, setSettings] = useState<{ defaultProject?: string; evidenceSpaceKey?: string; demoProject?: string }>({});
-  const [ingest, setIngest] = useState<{ url: string; token: string } | null>(null);
+  const [ingest, setIngest] = useState<{ url: string; token: string; projectKey?: string; exampleTestKey?: string } | null>(null);
   const [showToken, setShowToken] = useState(false);
   const [toast, setToast] = useState<{ text: string; error?: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
@@ -26,7 +26,7 @@ export function Admin() {
   const curl = ingest ? `curl -X POST "${ingest.url}" \\
   -H "Content-Type: application/json" \\
   -H "x-scrutineer-token: ${showToken ? ingest.token : '$SCRUTINEER_TOKEN'}" \\
-  -d '{"projectKey":"${settings.defaultProject ?? 'BBW'}","version":"BBW 2.3","runId":"1181","runUrl":"https://ci.example.com/hil/1181","results":[{"testKey":"BBW-56","result":"passed"}]}'` : '';
+  -d '{"projectKey":"${ingest.projectKey ?? 'BBW'}","version":"BBW 2.3","runId":"1181","runUrl":"https://ci.example.com/hil/1181","results":[{"testKey":"${ingest.exampleTestKey ?? 'YOUR-TEST-KEY'}","result":"passed"}]}'` : '';
 
   return (
     <div className="admin">

@@ -109,7 +109,7 @@ prompts/        Rovo agent instructions
 ```
 
 **Data:**
-- Trace items are ordinary Jira issues with a `scrutineer` issue property (role, ASIL, reviewer).
+- Trace items are ordinary Jira issues with a `scrutineer` issue property (role, ASIL, reviewer). The role and ASIL are indexed for JQL, for example `scrutineerRole = REQ AND scrutineerAsil = D`.
 - Trace links are real Jira issue links (`Scrutineer Mitigates`, `Scrutineer Implements`, `Scrutineer Verifies`, `Scrutineer Derived`, `Blocks`).
 - Test executions and suspect flags are issue properties on each test case (`scrutineer.exec`, `scrutineer.suspects`). Sign-offs and evidence records are project properties. Shared settings are a Forge app property. So the Jira UI, Rovo (from Jira or Confluence) and MCP all read the same evidence.
 - Forge KVS holds only context-local data: the CI ingest token, a readiness cache, immutable evidence snapshots and demo bookkeeping.

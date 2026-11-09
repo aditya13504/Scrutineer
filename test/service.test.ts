@@ -8,6 +8,7 @@ const state = vi.hoisted(() => ({
   snap: null as unknown,
   signoffs: [] as unknown[],
   issue: null as unknown,
+  withItems: [] as string[],
 }));
 
 vi.mock('../src/store/state', () => ({
@@ -20,6 +21,7 @@ vi.mock('../src/jira/client', () => ({
   listVersions: async () => state.versions,
   getIssue: async () => state.issue,
   projectsWithVersion: async (r: string) => (r === 'BBW 2.3' ? ['BBW'] : r === 'Shared 1.0' ? ['A', 'B'] : []),
+  projectsWithScrutineerItems: async () => state.withItems,
 }));
 vi.mock('../src/snapshot/build', () => ({ buildSnapshot: async () => state.snap }));
 vi.mock('../src/ingest/record', () => ({ recordBenchRun: async () => ({ result: 'Passed' }) }));
@@ -33,6 +35,7 @@ beforeEach(() => {
   state.versions = [{ id: '1', name: 'BBW 2.2', released: true }, { id: '2', name: 'BBW 2.3', released: false }, { id: '3', name: 'BBW 2.4', released: false }];
   state.snap = mkSnap();
   state.signoffs = [];
+  state.withItems = [];
 });
 
 describe('service', () => {
@@ -48,6 +51,14 @@ describe('service', () => {
     expect(await resolveProject(undefined, 'BBW 2.3')).toBe('BBW');
     await expect(resolveProject(undefined, 'Shared 1.0')).rejects.toThrow(/several projects \(A, B\)/);
     await expect(resolveProject(undefined, 'Nope 9')).rejects.toThrow(/Load the demo/);
+  });
+
+  it('resolveProject: with neither default nor release, uses the one project holding Scrutineer items', async () => {
+    state.settings.defaultProject = undefined;
+    state.withItems = ['BBW'];
+    expect(await resolveProject(undefined)).toBe('BBW');
+    state.withItems = ['A', 'B'];
+    await expect(resolveProject(undefined)).rejects.toThrow(/several projects/);
   });
 
   it('resolveRelease: input, else first unreleased version, else error', async () => {

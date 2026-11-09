@@ -8,7 +8,7 @@ import { hashSnapshot } from './evidence/render';
 import { applyChangeImpact, reviewSuspect } from './impact/apply';
 import { downstream, upstream } from './impact/impact';
 import { recordBenchRun } from './ingest/record';
-import { getUser, listVersions, patchIssueProperty, projectsWithVersion, transitionToDone } from './jira/client';
+import { getUser, listVersions, patchIssueProperty, projectsWithScrutineerItems, projectsWithVersion, transitionToDone } from './jira/client';
 import type { ScrutineerProperty } from './jira/map';
 import { buildSnapshot } from './snapshot/build';
 import { getSettings, putStoredSnapshot } from './store/state';
@@ -31,6 +31,10 @@ export async function resolveProject(input?: string | null, release?: string | n
     if (keys.length === 1) return keys[0];
     if (keys.length > 1) throw new Error(`Release "${rel}" exists in several projects (${keys.join(', ')}). Name the project.`);
   }
+  // Otherwise, if exactly one project holds Scrutineer items, that's the one.
+  const withItems = await projectsWithScrutineerItems();
+  if (withItems.length === 1) return withItems[0];
+  if (withItems.length > 1) throw new Error(`Scrutineer items exist in several projects (${withItems.join(', ')}). Name the project.`);
   throw new Error('No project. Load the demo or set a default project in Scrutineer settings.');
 }
 

@@ -30,6 +30,18 @@ modules:
       resolver:
         function: resolver
 
+  jira:entityProperty:
+    - key: scrutineer-index
+      entityType: issue
+      propertyKey: scrutineer
+      values:
+        - path: role
+          type: string
+          searchAlias: scrutineerRole
+        - path: asil
+          type: string
+          searchAlias: scrutineerAsil
+
   rovo:agent:
     - key: scrutineer-agent
       name: Scrutineer
