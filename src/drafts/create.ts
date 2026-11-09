@@ -3,7 +3,7 @@ import { adfText, createIssue, createLink, setIssueProperty } from '../jira/clie
 import { draftToDescription, type TestDraft } from './testDraft';
 
 /** Creates a Test Case issue from an approved draft and links it "verifies" the requirement. */
-export async function createLinkedTest(projectKey: string, req: TraceItem, draft: TestDraft, release: string, demo: boolean): Promise<string> {
+export async function createLinkedTest(projectKey: string, req: TraceItem, draft: TestDraft, release: string, demo: boolean, who: 'app' | 'user' = 'user'): Promise<string> {
   const created = await createIssue({
     project: { key: projectKey },
     issuetype: { name: 'Task' },
@@ -11,8 +11,8 @@ export async function createLinkedTest(projectKey: string, req: TraceItem, draft
     description: adfText(draftToDescription(draft, badge(req))),
     labels: ['scrutineer-tc', ...(demo ? ['scrutineer-demo'] : [])],
     fixVersions: [{ name: release }],
-  });
-  await setIssueProperty(created.key, { role: 'TC', ...(demo ? { demo: true } : {}) });
-  await createLink('verifies', created.key, req.key);
+  }, who);
+  await setIssueProperty(created.key, { role: 'TC', ...(demo ? { demo: true } : {}) }, who);
+  await createLink('verifies', created.key, req.key, who);
   return created.key;
 }

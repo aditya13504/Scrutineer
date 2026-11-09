@@ -141,3 +141,18 @@ export const addRemoteLink = (key: string, url: string, title: string) =>
   call<void>('app', route`/rest/api/3/issue/${key}/remotelink`, 'POST', { object: { url, title, icon: { url16x16: 'https://www.atlassian.com/favicon.ico', title: 'Confluence' } } });
 
 export const getServerInfo = () => call<{ baseUrl: string }>('app', route`/rest/api/3/serverInfo`);
+
+/** Permission checks as the calling user (used by resolver guards). */
+async function myPermission(permission: string, projectKey?: string): Promise<boolean> {
+  try {
+    const r = projectKey
+      ? await call<{ permissions: Record<string, { havePermission: boolean }> }>('user', route`/rest/api/3/mypermissions?projectKey=${projectKey}&permissions=${permission}`)
+      : await call<{ permissions: Record<string, { havePermission: boolean }> }>('user', route`/rest/api/3/mypermissions?permissions=${permission}`);
+    return !!r.permissions?.[permission]?.havePermission;
+  } catch (e) {
+    if (e instanceof JiraError && (e.status === 404 || e.status === 400 || e.status === 403)) return false;
+    throw e;
+  }
+}
+export const isJiraAdmin = () => myPermission('ADMINISTER');
+export const canBrowseProject = (projectKey: string) => myPermission('BROWSE_PROJECTS', projectKey);

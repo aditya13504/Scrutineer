@@ -5,7 +5,8 @@ import { DEMO_REVIEWERS } from '../demo/dataset';
 import { publishEvidencePack } from '../evidence/publish';
 import { reviewSuspect } from '../impact/apply';
 import { recordBenchRun, recordManual } from '../ingest/record';
-import { assignableUsers, getProject } from '../jira/client';
+import { assignableUsers, canBrowseProject, getProject, isJiraAdmin } from '../jira/client';
+import { ADMIN_RESOLVERS, authorizeAdmin, authorizeProject } from './guards';
 import type { ScrutineerProperty } from '../jira/map';
 import {
   actorOf, applyFix, createTestFor, draftTest, explainFinding, getIssueTrace, getReadiness, listReleases, resolveProject,
@@ -23,13 +24,20 @@ type P = Record<string, unknown>;
 const resolver = new Resolver();
 const def = (name: string, fn: (payload: P, ctx: Ctx) => Promise<unknown>) =>
   resolver.define(name, async ({ payload, context }) => {
-    try { return { ok: true, data: await fn((payload ?? {}) as P, context as Ctx) }; } catch (e) {
+    try {
+      if (ADMIN_RESOLVERS.has(name)) await authorizeAdmin(context as Ctx, guardDeps);
+      return { ok: true, data: await fn((payload ?? {}) as P, context as Ctx) };
+    } catch (e) {
       console.error(`resolver ${name} failed`, e);
       return { ok: false, error: (e as Error).message };
     }
   });
 const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
-const projectOf = async (p: P, c: Ctx) => resolveProject(str(p.projectKey) ?? c.extension?.project?.key ?? c.extension?.issue?.key?.split('-')[0]);
+const guardDeps = { isJiraAdmin, canBrowse: canBrowseProject };
+const projectOf = async (p: P, c: Ctx) =>
+  authorizeProject(await resolveProject(str(p.projectKey) ?? c.extension?.project?.key ?? c.extension?.issue?.key?.split('-')[0]), guardDeps);
+/** For issue-scoped resolvers: the issue's project must be browsable by the caller. */
+const issueOf = async (key: unknown) => { const k = String(key ?? '').toUpperCase(); await authorizeProject(k.split('-')[0], guardDeps); return k; };
 
 def('getContextInfo', async (p, c) => {
   const settings = await getSettings();
@@ -49,7 +57,7 @@ def('explainFinding', async (p, c) => {
   return explainFinding(projectKey, await resolveRelease(projectKey, str(p.release)), String(p.findingId));
 });
 def('traceImpact', async (p, c) => traceImpact(await projectOf(p, c), String(p.issueKey)));
-def('getIssueTrace', async (p, c) => getIssueTrace(String(p.issueKey ?? c.extension?.issue?.key)));
+def('getIssueTrace', async (p, c) => getIssueTrace(await issueOf(p.issueKey ?? c.extension?.issue?.key)));
 def('draftTest', async (p, c) => draftTest(await projectOf(p, c), String(p.requirementKey)));
 def('createTest', async (p, c) => {
   const projectKey = await projectOf(p, c);
@@ -61,19 +69,21 @@ def('applyFix', async (p, c) => {
 });
 def('recordManualResult', async (p, c) => {
   const actor = await actorOf(c.accountId);
-  return recordManual(String(p.testKey), String(p.version), p.result as Exclude<ExecResult, 'NotRun'>, actor.name, str(p.note));
+  if (p.result !== 'Passed' && p.result !== 'Failed') throw new Error('Result must be Passed or Failed.');
+  if (!str(p.version)) throw new Error('Choose the release the test ran on.');
+  return recordManual(await issueOf(p.testKey), String(p.version), p.result as Exclude<ExecResult, 'NotRun'>, actor.name, str(p.note));
 });
 def('runBench', async (p, c) => {
   const settings = await getSettings();
-  const testKey = String(p.testKey);
+  const testKey = await issueOf(p.testKey);
   if (settings.demoProject !== testKey.split('-')[0]) throw new Error('The simulated bench is only available in the demo project.');
   return recordBenchRun(testKey, String(p.version), (await actorOf(c.accountId)).name);
 });
 def('resolveSuspect', async (p, c) => {
-  await reviewSuspect(String(p.testKey), str(p.upstreamKey), (await actorOf(c.accountId)).name, String(p.justification ?? ''));
+  await reviewSuspect(await issueOf(p.testKey), str(p.upstreamKey), (await actorOf(c.accountId)).name, String(p.justification ?? ''));
   return { ok: true };
 });
-def('setIssueMeta', async (p, c) => setIssueMeta(String(p.issueKey), (p.patch ?? {}) as Partial<ScrutineerProperty>, await actorOf(c.accountId)));
+def('setIssueMeta', async (p, c) => setIssueMeta(await issueOf(p.issueKey), (p.patch ?? {}) as Partial<ScrutineerProperty>, await actorOf(c.accountId)));
 def('publishEvidence', async (p, c) => {
   const projectKey = await projectOf(p, c);
   const settings = await getSettings();

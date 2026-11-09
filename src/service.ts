@@ -154,7 +154,7 @@ export async function applyFix(projectKey: string, release: string, findingId: s
     case 'assign_reviewer': {
       if (!input.reviewerId) throw new Error('Choose an independent reviewer.');
       if (input.reviewerId === target.assigneeId) throw new Error('The reviewer must be someone other than the assignee.');
-      await patchIssueProperty(target.key, { reviewerId: input.reviewerId, reviewerName: input.reviewerName });
+      await patchIssueProperty(target.key, { reviewerId: input.reviewerId, reviewerName: input.reviewerName }, 'user');
       return { ok: true, message: `${input.reviewerName ?? 'Reviewer'} recorded as independent reviewer of ${badge(target)}.` };
     }
     case 'resolve_defect': {
