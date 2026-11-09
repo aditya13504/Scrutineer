@@ -33,10 +33,10 @@ export async function searchIssues(jql: string, who: Who = 'app'): Promise<JiraI
       jql, fields: SEARCH_FIELDS, properties: [PROPERTY_KEY], maxResults: 100, ...(nextPageToken ? { nextPageToken } : {}),
     });
     out.push(...res.issues);
-    if (!res.nextPageToken || res.isLast) break;
+    if (!res.nextPageToken || res.isLast) return out;
     nextPageToken = res.nextPageToken;
   }
-  return out;
+  throw new Error(`Search returned too many issues (over ${out.length}). Scrutineer evaluates complete projects only, so narrow the project or split the safety program.`);
 }
 
 export const searchProjectIssues = (projectKey: string) => searchIssues(`project = "${projectKey.replace(/"/g, '')}" ORDER BY key ASC`);

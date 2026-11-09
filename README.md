@@ -10,7 +10,7 @@ Teams building software for cars (ISO 26262) can't ship until they prove an unbr
 Hazard → Safety requirement → Implementation → Verification test → Passing result on this release
 ```
 
-Today most teams assemble that proof by hand in spreadsheets. Scrutineer computes it live from Jira, gives each release a go/no-go verdict backed by evidence, flags verification made stale by upstream changes, and publishes an audit-ready evidence pack to Confluence. A Rovo agent explains gaps and drafts fixes, and nothing is written without your approval.
+Today most teams assemble that proof by hand in spreadsheets. Scrutineer computes it live from Jira, gives each release a go/no-go verdict backed by evidence, flags verification made stale by upstream changes, and publishes an evidence pack to Confluence that auditors can read. A Rovo agent explains gaps and drafts fixes, and nothing is written without your approval.
 
 Built on Atlassian Forge for **Codegeist 2026** (Apps for Specialized Industries).
 
@@ -83,6 +83,7 @@ curl -X POST "$SCRUTINEER_URL" \
 The web trigger responds as follows:
 - `200`: all results recorded
 - `207`: some entries rejected (unknown test key or bad result), with the valid ones still recorded
+- `422`: nothing recorded (every entry rejected, or an empty batch)
 - `400`: malformed body
 - `401`: bad token
 

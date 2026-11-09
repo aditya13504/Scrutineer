@@ -4,7 +4,7 @@
 
 **Tagline (≤ 80 chars):** ISO 26262 traceability release gate for Jira, with evidence packs in Confluence
 
-**Summary (≤ 250 chars):** See whether a safety-critical release is ready to ship. Scrutineer checks hazards, requirements, tests and results in Jira, flags verification made stale by changes, and publishes an audit-ready evidence pack to Confluence.
+**Summary (≤ 250 chars):** See whether a safety-critical release is ready to ship. Scrutineer checks hazards, requirements, tests and results in Jira, flags verification made stale by changes, and publishes an evidence pack to Confluence.
 
 ## Highlights
 
