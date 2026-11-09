@@ -96,3 +96,7 @@ export async function putEvidenceSnapshot(snapshotId: string, s: StoredSnapshot 
   await kvs.set(safe(`evsnap:${snapshotId}`), s, { keyPolicy: 'FAIL_IF_EXISTS' });
 }
 export const getEvidenceSnapshot = async (snapshotId: string) => (await kvs.get(safe(`evsnap:${snapshotId}`))) as (StoredSnapshot & { snap: TraceSnapshot }) | undefined;
+
+export const getDemoComplete = async () => (await kvs.get('demo:complete')) as { projectKey: string; at: string } | undefined;
+export const setDemoComplete = (projectKey: string) => kvs.set('demo:complete', { projectKey, at: new Date().toISOString() });
+export const clearDemoComplete = () => kvs.delete('demo:complete');

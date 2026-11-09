@@ -40,14 +40,14 @@ export function DemoLoader({ onReady, compact }: { onReady?: (projectKey: string
       {!compact && <p>Creates the Brake-by-Wire ECU project (key BBW) with hazards, safety requirements, implementation stories, test cases with HIL results, a defect and Confluence specs. Release BBW 2.2 is green and BBW 2.3 has four planted problems to fix.</p>}
       <div className="row">
         <button className="btn primary" onClick={() => start(false)} disabled={running}>{running ? 'Loading demo…' : 'Load demo project'}</button>
-        {!compact && status && ['created', 'exists', 'partial', 'failed'].includes(status.state) && <button className="btn subtle" onClick={() => setConfirmReset(true)} disabled={running}>Reset demo</button>}
+        {status && (compact ? ['partial', 'failed'] : ['created', 'exists', 'partial', 'failed']).includes(status.state) && <button className="btn subtle" onClick={() => setConfirmReset(true)} disabled={running}>Reset demo</button>}
         {running && <span className="muted small">This takes about a minute.</span>}
       </div>
       {error && <p className="banner warn" style={{ marginTop: 8 }}>{error}</p>}
       {status && status.steps.length > 0 && (
         <ul className="steps">
           {status.steps.map((s) => <li key={s.name}><span className={s.ok ? 'ok' : 'bad'}>{s.ok ? 'Done' : 'Failed'}</span> {s.name}{s.detail ? <span className="muted">: {s.detail}</span> : null}</li>)}
-          {status.state === 'failed' && <li className="bad">Loading stopped. Fix the failed step (often a missing admin permission) and load again.</li>}
+          {status.state === 'failed' && <li className="bad">Loading stopped. Reset the demo, fix the failed step (often a missing admin permission), then load it again.</li>}
         </ul>
       )}
       {confirmReset && (

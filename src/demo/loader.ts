@@ -7,7 +7,8 @@ import {
   getServerInfo, listLinkTypes, listVersions, searchIssues, setIssueProperty, transitionToDone, updateVersion,
 } from '../jira/client';
 import { LINK_TYPES, type ScrutineerProperty } from '../jira/map';
-import { addExecutions, deleteProjectState, getSettings, putDemoStatus, putSuspects, saveSettings, type DemoStatus } from '../store/kvs';
+import { addExecutions, clearDemoComplete, deleteProjectState, getDemoComplete, getSettings, putDemoStatus, putSuspects, saveSettings, setDemoComplete, type DemoStatus } from '../store/kvs';
+import { existingDataDecision } from './policy';
 import { DEMO, DEMO_REVIEWERS } from './dataset';
 
 export const DEMO_LABEL = 'scrutineer-demo';
@@ -54,10 +55,19 @@ export async function loadDemo(opts: LoadOptions): Promise<DemoStatus> {
     status.projectKey = projectKey;
 
     const already = await searchIssues(`project = "${projectKey}" AND labels = "${DEMO_LABEL}"`);
-    if (already.length) {
+    const complete = (await getDemoComplete())?.projectKey === projectKey;
+    const decision = existingDataDecision(complete, already.length);
+    if (decision === 'exists') {
       status.state = 'exists';
       status.steps.push({ name: 'Demo data', ok: true, detail: `Already loaded (${already.length} issues). Use Reset demo to start over.` });
       await saveSettings({ defaultProject: projectKey, demoProject: projectKey });
+      await putDemoStatus(status);
+      return status;
+    }
+    if (decision === 'incomplete') {
+      status.state = 'failed';
+      status.steps.push({ name: 'Demo data', ok: false, detail: `A previous load did not finish (${already.length} demo issues exist). Reset the demo, then load it again.` });
+      await saveSettings({ demoProject: projectKey });
       await putDemoStatus(status);
       return status;
     }
@@ -147,6 +157,7 @@ export async function loadDemo(opts: LoadOptions): Promise<DemoStatus> {
     }, false);
 
     await saveSettings({ defaultProject: projectKey, demoProject: projectKey });
+    await setDemoComplete(projectKey);
     status.state = status.steps.every((s) => s.ok) ? 'created' : 'partial';
   } catch {
     status.state = 'failed';
@@ -162,6 +173,7 @@ export async function resetDemo(): Promise<DemoStatus> {
   const issues = await searchIssues(`project = "${projectKey}" AND labels = "${DEMO_LABEL}"`);
   for (const i of issues) await deleteIssue(i.key);
   const n = await deleteProjectState(projectKey);
+  await clearDemoComplete();
   const status: DemoStatus = { state: 'reset', projectKey, at: new Date().toISOString(),
     steps: [{ name: 'Reset', ok: true, detail: `Deleted ${issues.length} issues and ${n} stored records` }] };
   await putDemoStatus(status);

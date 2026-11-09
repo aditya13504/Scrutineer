@@ -1,7 +1,8 @@
 // Async consumer for the demo loader (long-running: up to 900 s).
 import { Queue } from '@forge/events';
 import { loadDemo, resetDemo } from '../demo/loader';
-import { putDemoStatus } from '../store/kvs';
+import { getDemoStatus, putDemoStatus } from '../store/kvs';
+import { assertCanStart } from '../demo/policy';
 
 export const demoQueue = new Queue({ key: 'demo-queue' });
 
@@ -18,6 +19,7 @@ export async function onDemoJob(event: { body: DemoJob }): Promise<void> {
 }
 
 export async function enqueueDemo(job: DemoJob): Promise<void> {
+  assertCanStart(await getDemoStatus(), Date.now());
   await putDemoStatus({ state: 'running', at: new Date().toISOString(), steps: [] });
   await demoQueue.push({ body: job as unknown as Record<string, unknown> });
 }
