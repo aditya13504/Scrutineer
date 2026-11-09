@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { draftTestCase } from '../../src/drafts/testDraft';
-import { hashSnapshot, renderEvidencePack, canonicalJson } from '../../src/evidence/render';
+import { hashSnapshot, renderEvidencePack, canonicalJson, sourceHtml } from '../../src/evidence/render';
 import { evaluateGate } from '../../src/engine/gate';
 import { mkSnap, item } from '../engine/fixtures';
 import { demoAsSnapshot } from '../../src/demo/dataset';
@@ -89,5 +89,21 @@ describe('renderEvidencePack', () => {
     expect(storage).toContain('GO');
     expect(storage).not.toContain('NO-GO');
     expect(storage).toContain('Priya');
+  });
+});
+
+describe('sourceHtml (live: raw CI URLs stretched the matrix off the page)', () => {
+  const base = { result: 'Passed' as const, version: 'V', executedAt: '2026-11-05T00:00:00Z', actor: 'CI (HIL pipeline #1180)' };
+  it('renders an http(s) reference as a short "run log" link', () => {
+    const h = sourceHtml({ ...base, source: 'ci', reference: 'https://ci.example.com/hil/1180?a=1&b=2' });
+    expect(h).toBe('CI (HIL pipeline #1180), <a href="https://ci.example.com/hil/1180?a=1&amp;b=2">run log</a>');
+  });
+  it('escapes a non-URL reference and never links it', () => {
+    const h = sourceHtml({ ...base, source: 'ci', reference: 'javascript:alert(1) <b>' });
+    expect(h).toBe('CI (HIL pipeline #1180) — javascript:alert(1) &lt;b&gt;');
+  });
+  it('keeps the simulated and manual labels', () => {
+    expect(sourceHtml({ ...base, source: 'bench-sim' })).toBe('simulated HIL bench');
+    expect(sourceHtml({ ...base, source: 'manual', actor: 'Ann & Bo' })).toBe('manual attestation by Ann &amp; Bo');
   });
 });

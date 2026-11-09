@@ -27,7 +27,16 @@ export async function onIssueUpdated(event: IssueUpdatedEvent): Promise<void> {
   if (event.atlassianId) {
     try { actor = (await getUser(event.atlassianId)).displayName; } catch { /* keep default */ }
   }
-  const at = event.timestamp ? new Date(event.timestamp).toISOString() : new Date().toISOString();
+  const at = eventTime(event.timestamp);
   const flagged = await applyChangeImpact(projectKey, event.issue.key, actor, at, fields);
   console.log(`Scrutineer change-impact: ${event.issue.key} changed (${fields.join(',')}); flagged ${flagged.length} test(s)`, flagged);
+}
+
+// Jira sends the event time as epoch milliseconds, sometimes as a string ("1762687526188").
+// Never let an odd timestamp drop a change-impact event: fall back to now.
+export function eventTime(ts: string | number | undefined, now = new Date()): string {
+  if (ts === undefined || ts === '') return now.toISOString();
+  const n = typeof ts === 'number' ? ts : /^\d+$/.test(ts) ? Number(ts) : Date.parse(ts);
+  const d = new Date(n);
+  return Number.isNaN(d.getTime()) ? now.toISOString() : d.toISOString();
 }

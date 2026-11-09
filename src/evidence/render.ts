@@ -28,6 +28,14 @@ export function sourceLabel(e: Execution): string {
   return `${e.actor}${e.reference ? ` — ${e.reference}` : ''}`;
 }
 
+// HTML for the matrix: a CI run URL becomes a short link so long URLs don't stretch the table.
+export function sourceHtml(e: Execution): string {
+  if (e.source === 'ci' && e.reference && /^https?:\/\/\S+$/i.test(e.reference)) {
+    return `${esc(e.actor)}, <a href="${esc(e.reference)}">run log</a>`;
+  }
+  return esc(sourceLabel(e));
+}
+
 const VERDICT_TEXT = { GO: 'GO', AT_RISK: 'AT RISK', NO_GO: 'NO-GO' } as const;
 const VERDICT_PANEL = { GO: 'tip', AT_RISK: 'note', NO_GO: 'warning' } as const;
 const VERDICT_COLOUR = { GO: 'Green', AT_RISK: 'Yellow', NO_GO: 'Red' } as const;
@@ -48,7 +56,7 @@ export function renderEvidencePack(snap: TraceSnapshot, gate: GateResult, ctx: E
     const tests = c.incoming(r.key, 'verifies').filter((k) => it(k)?.role === 'TC');
     const results = tests.map((t) => {
       const e = c.latestExec(t, snap.release);
-      return e ? `${label(t)}: ${e.result} (${esc(sourceLabel(e))}, ${e.executedAt.slice(0, 10)})` : `${label(t)}: not run on ${esc(snap.release)}`;
+      return e ? `${label(t)}: ${e.result} (${sourceHtml(e)},${e.executedAt.slice(0, 10)})` : `${label(t)}: not run on ${esc(snap.release)}`;
     });
     return `<tr><td>${label(r.key)}<br/>${esc(r.summary)}</td><td>${r.asil ?? '—'}</td>` +
       `<td>${hz.map(label).join('<br/>') || '—'}</td>` +
