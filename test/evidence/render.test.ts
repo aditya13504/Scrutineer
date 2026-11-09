@@ -68,6 +68,13 @@ describe('renderEvidencePack', () => {
     expect(storage).toContain('Marta Kowalski'); // suspect history
   });
 
+  it('suspect history stays Open when the only later run is on another version (review C1)', () => {
+    const s = demoAsSnapshot('BBW 2.3');
+    s.executions.T4 = [...s.executions.T4, { result: 'Passed', version: 'BBW 2.2', executedAt: '2026-11-07T00:00:00.000Z', source: 'ci', actor: 'CI' }];
+    const { storage } = renderEvidencePack(s, evaluateGate(s), ctx);
+    expect(storage).toContain('<strong>Open</strong>');
+  });
+
   it('escapes XML special characters', () => {
     const s = mkSnap();
     s.items.R1.summary = 'Torque <limit> & "ramp"';

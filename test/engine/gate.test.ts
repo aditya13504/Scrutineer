@@ -121,6 +121,13 @@ describe('evaluateGate — ISO 26262', () => {
     expect(ids(s)).toEqual([]);
   });
 
+  it('R6: a later run on a different version does not clear the suspect (review C1)', () => {
+    const s = mkSnap();
+    s.suspects = [{ testKey: 'T1', upstreamKey: 'R1', changedAt: '2026-11-04T10:00:00.000Z', changedBy: 'carol', reason: 'x' }];
+    s.executions.T1.push({ ...passed('BBW 2.2', '2026-11-05T10:00:00.000Z'), result: 'Failed' });
+    expect(ids(s)).toEqual(['R6:T1']);
+  });
+
   it('R6: suspect resolved by review clears', () => {
     const s = mkSnap();
     s.suspects = [{ testKey: 'T1', upstreamKey: 'R1', changedAt: '2026-11-04T10:00:00.000Z', changedBy: 'carol', reason: 'x',

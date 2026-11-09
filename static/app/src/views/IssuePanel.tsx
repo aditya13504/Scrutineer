@@ -49,7 +49,7 @@ export function IssuePanel({ issueKey }: { issueKey: string }) {
   }
 
   const it = t.item;
-  const openSuspects = (t.suspects ?? []).filter((s) => !s.resolved && !(t.executions ?? []).some((e) => e.executedAt > s.changedAt));
+  const openSuspects = (t.suspects ?? []).filter((s) => !s.resolved && !(t.executions ?? []).some((e) => it.fixVersions.includes(e.version) && e.executedAt > s.changedAt));
   const latestByVersion = (v: string) => (t.executions ?? []).find((e) => e.version === v);
 
   return (

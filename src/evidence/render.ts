@@ -67,7 +67,7 @@ export function renderEvidencePack(snap: TraceSnapshot, gate: GateResult, ctx: E
     ? `<table><tbody><tr><th>Test</th><th>Upstream change</th><th>Resolution</th></tr>${suspects.map((s) => {
       const res = s.resolved
         ? `${s.resolved.by === 'review' ? 'Impact review' : 'Re-run'} by ${esc(s.resolved.actor)} on ${s.resolved.at.slice(0, 10)}${s.resolved.justification ? `: “${esc(s.resolved.justification)}”` : ''}`
-        : ((snap.executions[s.testKey] ?? []).some((e) => e.executedAt > s.changedAt) ? 'Re-run after change' : '<strong>Open</strong>');
+        : ((snap.executions[s.testKey] ?? []).some((e) => e.version === snap.release && e.executedAt > s.changedAt) ? 'Re-run after change' : '<strong>Open</strong>');
       return `<tr><td>${label(s.testKey)}</td><td>${esc(s.reason)} — ${esc(s.changedBy)}, ${s.changedAt.slice(0, 10)}</td><td>${res}</td></tr>`;
     }).join('')}</tbody></table>`
     : '<p>No suspect links recorded for this release.</p>';

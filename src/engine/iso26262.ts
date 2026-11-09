@@ -88,7 +88,7 @@ const R6: Rule = {
     const out: Finding[] = [];
     for (const t of ctx.scopeTests) {
       const execs = ctx.snap.executions[t.key] ?? [];
-      const open = ctx.snap.suspects.filter((s) => s.testKey === t.key && !s.resolved && !execs.some((e) => e.executedAt > s.changedAt));
+      const open = ctx.snap.suspects.filter((s) => s.testKey === t.key && !s.resolved && !execs.some((e) => e.version === ctx.snap.release && e.executedAt > s.changedAt));
       if (!open.length) continue;
       const ups = [...new Set(open.map((s) => s.upstreamKey))];
       out.push({
