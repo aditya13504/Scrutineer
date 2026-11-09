@@ -1,4 +1,4 @@
-import type { DemoStatus } from '../store/kvs';
+import type { DemoStatus } from '../store/state';
 
 export const STALE_RUN_MS = 16 * 60 * 1000; // consumer timeout is 15 min
 

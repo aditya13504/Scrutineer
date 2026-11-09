@@ -1,7 +1,7 @@
 // Thin Jira REST client over @forge/api. Everything here runs inside Forge.
 import api, { route } from '@forge/api';
 import type { LinkRole } from '../engine/types';
-import { LINK_TYPES, PROPERTY_KEY, type JiraIssue, type ScrutineerProperty } from './map';
+import { EXEC_PROP, LINK_TYPES, PROPERTY_KEY, SUSPECT_PROP, type JiraIssue, type ScrutineerProperty } from './map';
 
 type Who = 'app' | 'user';
 const req = (who: Who) => (who === 'user' ? api.asUser() : api.asApp());
@@ -30,7 +30,7 @@ export async function searchIssues(jql: string, who: Who = 'app'): Promise<JiraI
   let nextPageToken: string | undefined;
   for (let page = 0; page < 50; page++) {
     const res = await call<{ issues: JiraIssue[]; nextPageToken?: string; isLast?: boolean }>(who, route`/rest/api/3/search/jql`, 'POST', {
-      jql, fields: SEARCH_FIELDS, properties: [PROPERTY_KEY], maxResults: 100, ...(nextPageToken ? { nextPageToken } : {}),
+      jql, fields: SEARCH_FIELDS, properties: [PROPERTY_KEY, EXEC_PROP, SUSPECT_PROP], maxResults: 100, ...(nextPageToken ? { nextPageToken } : {}),
     });
     out.push(...res.issues);
     if (!res.nextPageToken || res.isLast) return out;
@@ -40,6 +40,31 @@ export async function searchIssues(jql: string, who: Who = 'app'): Promise<JiraI
 }
 
 export const searchProjectIssues = (projectKey: string) => searchIssues(`project = "${projectKey.replace(/"/g, '')}" ORDER BY key ASC`);
+
+/** Keys of the projects that have issues in a fix version with this exact name (used to infer the project from a release). */
+export async function projectsWithVersion(release: string): Promise<string[]> {
+  const res = await call<{ issues: { fields: { project?: { key: string } } }[] }>('app', route`/rest/api/3/search/jql`, 'POST', {
+    jql: `fixVersion = "${release.replace(/["\\]/g, '')}"`, fields: ['project'], maxResults: 100,
+  });
+  return [...new Set(res.issues.map((i) => i.fields.project?.key).filter((k): k is string => !!k))];
+}
+
+// Shared Scrutineer state lives in Jira entity properties, so every Forge installation context
+// (Jira UI, Rovo in Jira or Confluence, MCP, triggers) reads the same evidence.
+async function getEntity<T>(r: ReturnType<typeof route>): Promise<T | undefined> {
+  try {
+    return (await call<{ value: T }>('app', r))?.value;
+  } catch (e) {
+    if (e instanceof JiraError && e.status === 404) return undefined;
+    throw e;
+  }
+}
+export const getIssueProp = <T>(issueKey: string, prop: string) => getEntity<T>(route`/rest/api/3/issue/${issueKey}/properties/${prop}`);
+export const setIssueProp = (issueKey: string, prop: string, value: unknown) => call<void>('app', route`/rest/api/3/issue/${issueKey}/properties/${prop}`, 'PUT', value);
+export const getProjectProp = <T>(projectKey: string, prop: string) => getEntity<T>(route`/rest/api/3/project/${projectKey}/properties/${prop}`);
+export const setProjectProp = (projectKey: string, prop: string, value: unknown) => call<void>('app', route`/rest/api/3/project/${projectKey}/properties/${prop}`, 'PUT', value);
+export const getAppProp = <T>(prop: string) => getEntity<T>(route`/rest/forge/1/app/properties/${prop}`);
+export const setAppProp = (prop: string, value: unknown) => call<void>('app', route`/rest/forge/1/app/properties/${prop}`, 'PUT', value);
 
 export async function getIssue(key: string, who: Who = 'app'): Promise<JiraIssue> {
   return call<JiraIssue>(who, route`/rest/api/3/issue/${key}?fields=${SEARCH_FIELDS.join(',')}&properties=${PROPERTY_KEY}`);

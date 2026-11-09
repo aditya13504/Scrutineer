@@ -10,7 +10,7 @@ const state = vi.hoisted(() => ({
   issue: null as unknown,
 }));
 
-vi.mock('../src/store/kvs', () => ({
+vi.mock('../src/store/state', () => ({
   getSettings: async () => state.settings,
   getSignoffs: async () => state.signoffs,
   putSignoffs: async (_p: string, _r: string, s: unknown[]) => { state.signoffs = s; },
@@ -19,6 +19,7 @@ vi.mock('../src/store/kvs', () => ({
 vi.mock('../src/jira/client', () => ({
   listVersions: async () => state.versions,
   getIssue: async () => state.issue,
+  projectsWithVersion: async (r: string) => (r === 'BBW 2.3' ? ['BBW'] : r === 'Shared 1.0' ? ['A', 'B'] : []),
 }));
 vi.mock('../src/snapshot/build', () => ({ buildSnapshot: async () => state.snap }));
 vi.mock('../src/ingest/record', () => ({ recordBenchRun: async () => ({ result: 'Passed' }) }));
@@ -40,6 +41,13 @@ describe('service', () => {
     expect(await resolveProject(undefined)).toBe('BBW');
     state.settings.defaultProject = undefined;
     await expect(resolveProject(undefined)).rejects.toThrow(/Load the demo or set a default project/);
+  });
+
+  it('resolveProject: with no default visible (another install context), infers the project from the release', async () => {
+    state.settings.defaultProject = undefined;
+    expect(await resolveProject(undefined, 'BBW 2.3')).toBe('BBW');
+    await expect(resolveProject(undefined, 'Shared 1.0')).rejects.toThrow(/several projects \(A, B\)/);
+    await expect(resolveProject(undefined, 'Nope 9')).rejects.toThrow(/Load the demo/);
   });
 
   it('resolveRelease: input, else first unreleased version, else error', async () => {

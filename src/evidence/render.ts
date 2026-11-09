@@ -2,7 +2,7 @@
 import { createHash } from 'node:crypto';
 import { buildContext } from '../engine/context';
 import { type Execution, type GateResult, type TraceSnapshot } from '../engine/types';
-import type { Signoff } from '../store/kvs';
+import type { Signoff } from '../store/state';
 
 export const DISCLAIMER = 'Scrutineer supports evidence gathering. It does not certify compliance.';
 

@@ -5,7 +5,7 @@ vi.mock('../src/jira/client', () => ({
   getIssue: async () => ({ key: 'P-1', properties: st.role ? { scrutineer: { role: st.role } } : {}, fields: { summary: 's', issuetype: { name: 'Task' } } }),
   getUser: async () => ({ displayName: 'Carol' }),
 }));
-vi.mock('../src/store/kvs', () => ({ getSettings: async () => ({ roleFallback: {} }) }));
+vi.mock('../src/store/state', () => ({ getSettings: async () => ({ roleFallback: {} }) }));
 vi.mock('../src/impact/apply', () => ({ applyChangeImpact: async (_p: string, _k: string, _a: string, at: string) => { st.applied++; st.at = at; return []; } }));
 
 import { onIssueUpdated } from '../src/handlers/trigger';

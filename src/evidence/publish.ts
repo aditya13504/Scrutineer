@@ -2,7 +2,7 @@ import { evaluateGate } from '../engine/gate';
 import { ensureSpace, createPage, pageUrl } from '../confluence/client';
 import { getServerInfo } from '../jira/client';
 import { buildSnapshot } from '../snapshot/build';
-import { addEvidence, getSignoffs, putEvidenceSnapshot, type EvidenceRecord } from '../store/kvs';
+import { addEvidence, getSignoffs, putEvidenceSnapshot, type EvidenceRecord } from '../store/state';
 import { hashSnapshot, renderEvidencePack } from './render';
 
 export async function publishEvidencePack(projectKey: string, release: string, spaceKey: string, actorName: string): Promise<EvidenceRecord> {

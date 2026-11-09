@@ -1,7 +1,7 @@
 import { evaluateGate } from './engine/gate';
 import { hashSnapshot } from './evidence/render';
 import { buildSnapshot } from './snapshot/build';
-import { getSignoffs, putSignoffs, type Signoff } from './store/kvs';
+import { getSignoffs, putSignoffs, type Signoff } from './store/state';
 
 export const SIGNOFF_ROLES: Signoff['role'][] = ['Safety Manager', 'Test Lead', 'Release Manager'];
 

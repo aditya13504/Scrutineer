@@ -3,7 +3,7 @@ import { applyChangeImpact } from '../impact/apply';
 import { TRACE_FIELDS } from '../impact/impact';
 import { getIssue, getUser } from '../jira/client';
 import { mapIssue } from '../jira/map';
-import { getSettings } from '../store/kvs';
+import { getSettings } from '../store/state';
 
 interface IssueUpdatedEvent {
   selfGenerated?: boolean;

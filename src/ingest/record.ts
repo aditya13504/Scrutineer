@@ -2,7 +2,7 @@ import type { Execution, ExecResult } from '../engine/types';
 import { getIssue } from '../jira/client';
 import { mapIssue, readProperty } from '../jira/map';
 import { buildSnapshot } from '../snapshot/build';
-import { addExecutions, getSettings } from '../store/kvs';
+import { addExecutions, getSettings } from '../store/state';
 import { parseIngest, type IngestResult } from './ingest';
 
 export async function knownTestKeys(projectKey: string): Promise<Set<string>> {

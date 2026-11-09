@@ -4,7 +4,7 @@
 - Fresh demo load: Jira settings → Apps → Scrutineer → Reset demo (if needed), then Load demo project.
 - Browser at 1440×900, Jira light theme, notifications off.
 - Have two tabs ready: the BBW Control Room and Rovo chat with the Scrutineer agent selected.
-- Have MCP Inspector open and connected to `https://mcp.atlassian.com/forge/<appId>`.
+- MCP: a site admin enables the tools once (admin.atlassian.com → Apps → Sites → your site → Connected apps → Scrutineer → Tools). Then have MCP Inspector open and connected to `https://mcp.atlassian.com/forge/<appId>` (pick the site on the consent screen).
 - Use no music, or royalty-free only. Show no third-party logos.
 
 Keys below assume a fresh `BBW` project:
@@ -37,5 +37,5 @@ If your keys differ, read them off the Findings tab.
 - **The issue panel:** role and ASIL editing, execution history with source labels.
 - **The decoy test:** its title mentions pedal plausibility, but it verifies a different requirement, and it is not counted. The superseded requirement is excluded from scope.
 - **The CI curl example** in the admin page, returning `207` for a bad key.
-- **Architecture slide:** pure rule engine (102 unit tests), Forge KVS, trigger, web trigger, workflow validator, `rovo:agent`, `rovo:mcp`.
+- **Architecture slide:** pure rule engine (112 unit tests), evidence stored as Jira properties, trigger, web trigger, workflow validator, `rovo:agent`, `rovo:mcp`.
 - **Workflow guard:** trying to close a `release-gate` issue while NO-GO shows the blocking message.

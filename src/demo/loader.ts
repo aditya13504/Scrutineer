@@ -7,7 +7,7 @@ import {
   getServerInfo, listLinkTypes, listVersions, searchIssues, setIssueProperty, transitionToDone, updateVersion,
 } from '../jira/client';
 import { LINK_TYPES, type ScrutineerProperty } from '../jira/map';
-import { addExecutions, clearDemoComplete, deleteProjectState, getDemoComplete, getSettings, putDemoStatus, putSuspects, saveSettings, setDemoComplete, type DemoStatus } from '../store/kvs';
+import { addExecutions, clearDemoComplete, deleteProjectState, getDemoComplete, getSettings, putDemoStatus, putSuspects, saveSettings, setDemoComplete, type DemoStatus } from '../store/state';
 import { existingDataDecision } from './policy';
 import { DEMO, DEMO_REVIEWERS } from './dataset';
 

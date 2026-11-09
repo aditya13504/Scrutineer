@@ -13,7 +13,7 @@ import {
   resolveRelease, setIssueMeta, traceImpact, type FixInput,
 } from '../service';
 import { signOff } from '../signoff';
-import { getDemoStatus, getSettings, getSignoffs, listEvidence, saveSettings, type Settings, type Signoff } from '../store/kvs';
+import { getDemoStatus, getSettings, getSignoffs, listEvidence, saveSettings, type Settings, type Signoff } from '../store/state';
 import { enqueueDemo } from './demo';
 import type { TestDraft } from '../drafts/testDraft';
 import type { ExecResult } from '../engine/types';

@@ -26,7 +26,7 @@ Built on Atlassian Forge for **Codegeist 2026** (Apps for Specialized Industries
 | **Trace panel** | Jira issue panel | Shows the role, ASIL, upstream and downstream links, execution history (with the source of each result), and suspect warnings. |
 | **CI / HIL results** | Web trigger | Your pipeline posts JSON results, which are recorded as CI evidence. The demo uses a clearly labelled *simulated* bench through the same code path. |
 | **Scrutineer agent** | Rovo | 8 actions: readiness, findings, explain, trace impact, draft test, create test, link issues, publish evidence. Write actions always show a draft and wait for an explicit yes. |
-| **MCP tools** | `rovo:mcp` | The read-only tools (`get-release-readiness`, `list-findings`, `explain-finding`, `trace-impact`) are available to external AI assistants. See [skill.md](skill.md). |
+| **MCP tools** | `rovo:mcp` | The read-only tools (`get-release-readiness`, `list-findings`, `explain-finding`, `trace-impact`) are available to external AI assistants. See [skill.md](skill.md). A site admin turns them on in **admin.atlassian.com → Apps → Sites → your site → Connected apps → Scrutineer → Tools**. |
 | **Evidence pack** | Confluence | One click publishes the verdict, matrix, findings, suspect-link history, sign-off table and a **SHA-256 fingerprint** of the evaluated snapshot. |
 | **Sign-off** | Control Room | Safety Manager, Test Lead and Release Manager sign off a GO release. Each sign-off is tied to the snapshot hash it approved. |
 | **Release guard** | Jira workflow validator | Blocks closing an issue labelled `release-gate` while its release is NO-GO. |
@@ -96,7 +96,7 @@ manifest.yml
 src/
   engine/       Pure rule engine: types, context, ISO 26262 rules, gate (fully unit-tested, no Forge imports)
   jira/         REST client + pure mapping from Jira issues/links to the trace model
-  snapshot/     Builds a TraceSnapshot from Jira + KVS
+  snapshot/     Builds a TraceSnapshot from one Jira search (issues, links, properties)
   impact/       Upstream/downstream walks, suspect flagging, impact reviews
   ingest/       CI result parsing (pure) + recording
   drafts/       Rule-based test case drafts + creation
@@ -111,10 +111,11 @@ prompts/        Rovo agent instructions
 **Data:**
 - Trace items are ordinary Jira issues with a `scrutineer` issue property (role, ASIL, reviewer).
 - Trace links are real Jira issue links (`Scrutineer Mitigates`, `Scrutineer Implements`, `Scrutineer Verifies`, `Scrutineer Derived`, `Blocks`).
-- Test executions, suspect flags, snapshots, evidence records and sign-offs live in Forge KVS.
+- Test executions and suspect flags are issue properties on each test case (`scrutineer.exec`, `scrutineer.suspects`). Sign-offs and evidence records are project properties. Shared settings are a Forge app property. So the Jira UI, Rovo (from Jira or Confluence) and MCP all read the same evidence.
+- Forge KVS holds only context-local data: the CI ingest token, a readiness cache, immutable evidence snapshots and demo bookkeeping.
 
 **Zero cost, and data stays on Atlassian:**
-- There are no external calls (no `permissions.external`). All data stays in Forge storage.
+- There are no external calls (no `permissions.external`). All data stays in your Jira, Confluence and Forge storage.
 - The app doesn't use the Forge LLMs API. All generative AI goes through Rovo.
 - Every agent capability also works without AI through the UI. The engine, change tracking, evidence pack and demo loader never depend on Rovo.
 

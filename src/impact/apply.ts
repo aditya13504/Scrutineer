@@ -1,7 +1,7 @@
 import { badge } from '../engine/types';
 import { addComment } from '../jira/client';
 import { buildSnapshot } from '../snapshot/build';
-import { getSuspects, putSuspects } from '../store/kvs';
+import { getSuspects, putSuspects } from '../store/state';
 import { flagsForChange, mergeFlags, resolveByReview } from './impact';
 
 /** Flags downstream tests as suspect after an upstream change and comments on each newly flagged test. */

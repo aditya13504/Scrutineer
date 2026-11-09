@@ -5,7 +5,7 @@ import { canBrowseProject, createLink, ensureLinkTypes, isJiraAdmin } from '../j
 import { authorizeProject } from './guards';
 import { buildSnapshot } from '../snapshot/build';
 import { actorOf, createTestFor, draftTest, explainFinding, getReadiness, resolveProject, resolveRelease, traceImpact } from '../service';
-import { getSettings } from '../store/kvs';
+import { getSettings } from '../store/state';
 
 interface ActionPayload {
   [k: string]: unknown;
@@ -15,7 +15,7 @@ interface ActionContext { principal?: { accountId?: string }; accountId?: string
 
 const s = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
 const project = async (p: ActionPayload) =>
-  authorizeProject(await resolveProject(s(p.projectKey) ?? p.context?.jira?.projectKey ?? p.context?.jira?.issueKey?.split('-')[0]), { isJiraAdmin, canBrowse: canBrowseProject });
+  authorizeProject(await resolveProject(s(p.projectKey) ?? p.context?.jira?.projectKey ?? p.context?.jira?.issueKey?.split('-')[0], s(p.release)), { isJiraAdmin, canBrowse: canBrowseProject });
 const who = (p: ActionPayload, c?: ActionContext) => actorOf(c?.principal?.accountId ?? c?.accountId ?? p.context?.accountId);
 
 async function safe<T>(name: string, fn: () => Promise<T>): Promise<T | { error: string }> {

@@ -38,11 +38,11 @@ Scrutineer turns Jira into a scrutineering bay:
 ## How we built it
 
 - **Forge app** in TypeScript on the Node 24 runtime. One React Custom UI serves three modules: `jira:projectPage`, `jira:issuePanel` and `jira:adminPage`.
-- **A pure rule engine** with no Forge imports, developed test-first: 102 unit tests across the engine, mapping, impact analysis, ingestion, the demo dataset, the evidence renderer and the UI.
+- **A pure rule engine** with no Forge imports, developed test-first: 112 unit tests across the engine, mapping, impact analysis, ingestion, the demo dataset, the evidence renderer and the UI.
 - **Real Jira data model:**
   - Trace items are ordinary issues with a `scrutineer` issue property.
   - Trace links are real Jira issue links.
-  - Executions, suspect flags, snapshots, evidence records and sign-offs live in Forge KVS.
+  - Executions and suspect flags are issue properties on the test case; sign-offs and evidence records are project properties. Every surface reads the same evidence, whichever Forge installation context runs it. Forge KVS keeps only the ingest token, caches and immutable evidence snapshots.
 - **Forge modules:** a `trigger` on `avi:jira:updated:issue` for change impact, a `webtrigger` for CI ingestion (timing-safe token check), a `jira:workflowValidator`, an async `consumer` for the demo loader, a `rovo:agent` with 8 `action` modules, and `rovo:mcp`.
 - **Zero cost, and data stays on Atlassian:** no external calls and no paid LLM API. All generative AI goes through Rovo, and every AI capability also has a deterministic button.
 

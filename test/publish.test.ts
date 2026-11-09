@@ -4,7 +4,7 @@ import { mkSnap } from './engine/fixtures';
 const saved = vi.hoisted(() => ({ evsnap: [] as { id: string; value: { hash: string } }[], evidence: [] as { snapshotId: string; hash: string }[], page: '' }));
 
 vi.mock('../src/snapshot/build', () => ({ buildSnapshot: async () => mkSnap() }));
-vi.mock('../src/store/kvs', () => ({
+vi.mock('../src/store/state', () => ({
   getSignoffs: async () => [],
   putEvidenceSnapshot: async (id: string, value: { hash: string }) => { saved.evsnap.push({ id, value }); },
   addEvidence: async (_p: string, _r: string, e: { snapshotId: string; hash: string }) => { saved.evidence.push(e); },

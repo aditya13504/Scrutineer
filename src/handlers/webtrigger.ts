@@ -1,7 +1,7 @@
 // Forge webtrigger: CI / HIL bench results ingestion. Authenticated by the x-scrutineer-token header.
 import { checkToken, ingestStatusCode } from '../ingest/ingest';
 import { ingestBody } from '../ingest/record';
-import { getSettings } from '../store/kvs';
+import { getSettings } from '../store/state';
 
 interface WebTriggerRequest { method: string; headers: Record<string, string[]>; body?: string }
 interface WebTriggerResponse { statusCode: number; headers: Record<string, string[]>; body: string }

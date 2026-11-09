@@ -1,7 +1,7 @@
 // Async consumer for the demo loader (long-running: up to 900 s).
 import { Queue } from '@forge/events';
 import { loadDemo, resetDemo } from '../demo/loader';
-import { getDemoStatus, putDemoStatus } from '../store/kvs';
+import { getDemoStatus, putDemoStatus } from '../store/state';
 import { assertCanStart } from '../demo/policy';
 
 export const demoQueue = new Queue({ key: 'demo-queue' });

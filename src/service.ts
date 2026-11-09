@@ -8,10 +8,10 @@ import { hashSnapshot } from './evidence/render';
 import { applyChangeImpact, reviewSuspect } from './impact/apply';
 import { downstream, upstream } from './impact/impact';
 import { recordBenchRun } from './ingest/record';
-import { getUser, listVersions, patchIssueProperty, transitionToDone } from './jira/client';
+import { getUser, listVersions, patchIssueProperty, projectsWithVersion, transitionToDone } from './jira/client';
 import type { ScrutineerProperty } from './jira/map';
 import { buildSnapshot } from './snapshot/build';
-import { getSettings, putStoredSnapshot } from './store/kvs';
+import { getSettings, putStoredSnapshot } from './store/state';
 
 export interface Actor { accountId: string; name: string }
 
@@ -20,10 +20,17 @@ export async function actorOf(accountId: string | undefined): Promise<Actor> {
   try { return { accountId, name: (await getUser(accountId)).displayName }; } catch { return { accountId, name: 'Jira user' }; }
 }
 
-export async function resolveProject(input?: string | null): Promise<string> {
+export async function resolveProject(input?: string | null, release?: string | null): Promise<string> {
   if (input && String(input).trim()) return String(input).trim().toUpperCase();
   const s = await getSettings();
   if (s.defaultProject) return s.defaultProject;
+  // No default visible here: a release name like "BBW 2.3" usually belongs to exactly one project.
+  const rel = release?.trim();
+  if (rel) {
+    const keys = await projectsWithVersion(rel);
+    if (keys.length === 1) return keys[0];
+    if (keys.length > 1) throw new Error(`Release "${rel}" exists in several projects (${keys.join(', ')}). Name the project.`);
+  }
   throw new Error('No project. Load the demo or set a default project in Scrutineer settings.');
 }
 

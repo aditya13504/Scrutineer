@@ -2,6 +2,15 @@
 import { ROLES, type Asil, type LinkRole, type Role, type StatusCategory, type TraceItem, type TraceLink } from '../engine/types';
 
 export const PROPERTY_KEY = 'scrutineer';
+/** Test executions and suspect flags are stored on the test case issue as { list: [...] }. */
+export const EXEC_PROP = 'scrutineer.exec';
+export const SUSPECT_PROP = 'scrutineer.suspects';
+
+/** Reads a { list: [...] } issue property from a search result; anything malformed reads as empty. */
+export function readListProp<T>(raw: JiraIssue, prop: string): T[] {
+  const v = raw.properties?.[prop] as { list?: unknown } | undefined;
+  return v && Array.isArray(v.list) ? (v.list as T[]) : [];
+}
 
 export interface ScrutineerProperty {
   role?: Role;
