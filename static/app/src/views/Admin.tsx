@@ -25,7 +25,7 @@ export function Admin() {
   const token = ingest ? (showToken ? ingest.token : '•'.repeat(12)) : '';
   const curl = ingest ? `curl -X POST "${ingest.url}" \\
   -H "Content-Type: application/json" \\
-  -H "x-scrutineer-token: ${token}" \\
+  -H "x-scrutineer-token: ${showToken ? ingest.token : '$SCRUTINEER_TOKEN'}" \\
   -d '{"projectKey":"${settings.defaultProject ?? 'BBW'}","version":"BBW 2.3","runId":"1181","runUrl":"https://ci.example.com/hil/1181","results":[{"testKey":"BBW-56","result":"passed"}]}'` : '';
 
   return (
@@ -57,6 +57,7 @@ export function Admin() {
             <label className="field"><span>Token (send as the x-scrutineer-token header)</span>
               <div className="row"><div className="code" style={{ flex: 1 }}>{token}</div><button className="btn small" onClick={() => setShowToken((s) => !s)}>{showToken ? 'Hide token' : 'Show token'}</button></div></label>
             <label className="field"><span>Example</span><div className="code">{curl}</div></label>
+            {!showToken && <p className="small muted">Click Show token to put your real token into the example, or set SCRUTINEER_TOKEN in your shell.</p>}
           </>
         )}
       </section>
