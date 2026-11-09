@@ -14,13 +14,16 @@ export function RoleBadge({ role, k, link = true }: { role?: Role; k: string; li
 
 export function Dialog({ title, children, onClose, footer }: { title: string; children: ReactNode; onClose: () => void; footer: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  // Mount-only: callers pass inline onClose functions, and re-running this on every render would steal focus while typing.
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
     ref.current?.querySelector<HTMLElement>('textarea, input, select, button.primary')?.focus();
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeRef.current(); };
     window.addEventListener('keydown', onKey);
     return () => { window.removeEventListener('keydown', onKey); prev?.focus?.(); };
-  }, [onClose]);
+  }, []);
   return (
     <div className="scrim" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="dialog" role="dialog" aria-modal="true" aria-label={title} ref={ref}>
