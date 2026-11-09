@@ -44,3 +44,10 @@ export function checkToken(headers: Record<string, string[] | undefined>, token:
   const b = Buffer.from(token);
   return a.length === b.length && timingSafeEqual(a, b);
 }
+
+/** 200 all recorded, 207 mixed, 422 nothing recorded (incl. empty batch), 400 malformed body. */
+export function ingestStatusCode(r: Pick<IngestResult, 'accepted' | 'rejected' | 'error'>): number {
+  if (r.error) return 400;
+  if (!r.accepted.length) return 422;
+  return r.rejected.length ? 207 : 200;
+}

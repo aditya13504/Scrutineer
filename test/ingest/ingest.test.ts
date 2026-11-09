@@ -53,3 +53,16 @@ describe('checkToken', () => {
     expect(checkToken({ 'x-scrutineer-token': [''] }, '')).toBe(false);
   });
 });
+
+import { ingestStatusCode } from '../../src/ingest/ingest';
+describe('ingestStatusCode (review I4)', () => {
+  it('422 when every entry is rejected, 207 when mixed, 200 when all accepted, 400 on error', () => {
+    const acc = [{ testKey: 'A', exec: {} as never }];
+    const rej = [{ index: 0, reason: 'x' }];
+    expect(ingestStatusCode({ accepted: [], rejected: rej })).toBe(422);
+    expect(ingestStatusCode({ accepted: acc, rejected: rej })).toBe(207);
+    expect(ingestStatusCode({ accepted: acc, rejected: [] })).toBe(200);
+    expect(ingestStatusCode({ accepted: [], rejected: [], error: 'bad' })).toBe(400);
+    expect(ingestStatusCode({ accepted: [], rejected: [] })).toBe(422);
+  });
+});
