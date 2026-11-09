@@ -1,5 +1,5 @@
 app:
-  id: ari:cloud:ecosystem::app/00000000-0000-0000-0000-000000000000
+  id: ari:cloud:ecosystem::app/9b7a0161-7786-48ea-9a1d-931dab7f3925
   runtime:
     name: nodejs24.x
 
@@ -33,7 +33,8 @@ modules:
   rovo:agent:
     - key: scrutineer-agent
       name: Scrutineer
-      description: Checks whether a safety-critical release is ready to ship (ISO 26262 traceability), explains gaps and drafts fixes for your approval.
+      description: Checks whether a safety-critical release is ready to ship (ISO
+        26262 traceability), explains gaps and drafts fixes for your approval.
       icon: resource:main;icon.svg
       prompt: resource:prompts;agent.md
       conversationStarters:
@@ -56,7 +57,9 @@ modules:
       name: Get release readiness
       function: fn-readiness
       actionVerb: GET
-      description: Returns the release gate verdict (GO, AT_RISK, NO_GO), readiness score, coverage stats and all findings for a release. Without inputs it uses the default project and its next unreleased version.
+      description: Returns the release gate verdict (GO, AT_RISK, NO_GO), readiness
+        score, coverage stats and all findings for a release. Without inputs it
+        uses the default project and its next unreleased version.
       inputs:
         projectKey:
           title: Project key
@@ -72,7 +75,8 @@ modules:
       name: List findings
       function: fn-findings
       actionVerb: GET
-      description: Lists every open finding for a release with rule id, severity, message and the issue keys involved.
+      description: Lists every open finding for a release with rule id, severity,
+        message and the issue keys involved.
       inputs:
         projectKey:
           title: Project key
@@ -88,7 +92,9 @@ modules:
       name: Explain finding
       function: fn-explain
       actionVerb: GET
-      description: Explains one finding (by id such as R4:BBW-12, or by issue key) with the rule, the ISO 26262 clause, the evidence issues and how to fix it.
+      description: Explains one finding (by id such as R4:BBW-12, or by issue key)
+        with the rule, the ISO 26262 clause, the evidence issues and how to fix
+        it.
       inputs:
         findingId:
           title: Finding id
@@ -114,7 +120,8 @@ modules:
       name: Trace impact
       function: fn-impact
       actionVerb: GET
-      description: Shows everything upstream and downstream of an issue in the safety trace, and which test cases would become suspect if it changed.
+      description: Shows everything upstream and downstream of an issue in the safety
+        trace, and which test cases would become suspect if it changed.
       inputs:
         issueKey:
           title: Issue key
@@ -125,7 +132,8 @@ modules:
       name: Draft test case
       function: fn-draft
       actionVerb: GET
-      description: Drafts (does not create) a verification test case for a safety requirement. Show the draft to the user before creating anything.
+      description: Drafts (does not create) a verification test case for a safety
+        requirement. Show the draft to the user before creating anything.
       inputs:
         requirementKey:
           title: Requirement key
@@ -136,7 +144,8 @@ modules:
       name: Create linked test case
       function: fn-create-test
       actionVerb: CREATE
-      description: Creates a test case for a safety requirement and links it with "verifies". Only call after the user explicitly approved the draft.
+      description: Creates a test case for a safety requirement and links it with
+        "verifies". Only call after the user explicitly approved the draft.
       inputs:
         requirementKey:
           title: Requirement key
@@ -167,7 +176,9 @@ modules:
       name: Link trace items
       function: fn-link
       actionVerb: CREATE
-      description: Creates a trace link between two Scrutineer items (mitigates, implements, verifies, derivedFrom). Only call after the user explicitly approved it.
+      description: Creates a trace link between two Scrutineer items (mitigates,
+        implements, verifies, derivedFrom). Only call after the user explicitly
+        approved it.
       inputs:
         fromKey:
           title: From issue
@@ -188,7 +199,9 @@ modules:
       name: Publish evidence pack
       function: fn-publish
       actionVerb: CREATE
-      description: Publishes a Confluence evidence pack (matrix, findings, suspect history, sign-offs, SHA-256 fingerprint) for a release. Only call after the user explicitly approved it.
+      description: Publishes a Confluence evidence pack (matrix, findings, suspect
+        history, sign-offs, SHA-256 fingerprint) for a release. Only call after
+        the user explicitly approved it.
       inputs:
         projectKey:
           title: Project key
@@ -232,7 +245,8 @@ modules:
   jira:workflowValidator:
     - key: release-guard
       name: Scrutineer release gate
-      description: Blocks the transition when the issue is labelled release-gate and its release is NO-GO in Scrutineer.
+      description: Blocks the transition when the issue is labelled release-gate and
+        its release is NO-GO in Scrutineer.
       function: fn-validator
 
   consumer:
