@@ -18,7 +18,7 @@
 - An MCP server lets external AI assistants check release readiness (read-only).
 - A CI web trigger records test results from your pipeline or HIL bench.
 - A workflow validator blocks closing a release while it is NO-GO.
-- Runs on Atlassian: no data leaves your site.
+- All data stays in Forge storage on your site, and the app makes no outbound calls. (The CI web trigger only receives results.)
 - A one-click demo project shows everything working in about a minute.
 
 Scrutineer supports evidence gathering. It does not certify compliance.

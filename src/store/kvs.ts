@@ -1,4 +1,4 @@
-// Typed wrappers over Forge KVS. All Scrutineer state lives here (Runs on Atlassian; no egress).
+// Typed wrappers over Forge KVS. All Scrutineer state lives here (no outbound calls).
 import { kvs, WhereConditions } from '@forge/kvs';
 import type { Execution, GateResult, Role, SuspectFlag, TraceSnapshot } from '../engine/types';
 
