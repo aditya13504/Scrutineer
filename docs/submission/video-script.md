@@ -37,5 +37,5 @@ If your keys differ, read them off the Findings tab.
 - **The issue panel:** role and ASIL editing, execution history with source labels.
 - **The decoy test:** its title mentions pedal plausibility, but it verifies a different requirement, and it is not counted. The superseded requirement is excluded from scope.
 - **The CI curl example** in the admin page, returning `207` for a bad key.
-- **Architecture slide:** pure rule engine (72 unit tests), Forge KVS, trigger, web trigger, workflow validator, `rovo:agent`, `rovo:mcp`.
+- **Architecture slide:** pure rule engine (89 unit tests), Forge KVS, trigger, web trigger, workflow validator, `rovo:agent`, `rovo:mcp`.
 - **Workflow guard:** trying to close a `release-gate` issue while NO-GO shows the blocking message.

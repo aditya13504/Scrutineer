@@ -124,7 +124,7 @@ prompts/        Rovo agent instructions
 
 ```bash
 npm install && npm --prefix static/app install
-npm test                 # engine, mapping, impact, ingestion, demo, evidence, service (72 tests)
+npm test                 # engine, mapping, impact, ingestion, demo, evidence, service (89 tests)
 npm run test:ui          # UI component tests
 npm run build:ui         # builds static/app/dist
 forge login              # once, with an Atlassian API token
