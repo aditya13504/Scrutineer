@@ -1,0 +1,74 @@
+{
+  "issues": [
+    {
+      "key": "BBW-1",
+      "properties": { "scrutineer": { "role": "HAZ", "asil": "D" } },
+      "fields": {
+        "summary": "Unintended loss of braking",
+        "status": { "name": "Done", "statusCategory": { "key": "done" } },
+        "issuetype": { "name": "Task" },
+        "fixVersions": [{ "name": "BBW 2.3" }],
+        "updated": "2026-11-01T10:00:00.000+0000",
+        "issuelinks": []
+      }
+    },
+    {
+      "key": "BBW-2",
+      "properties": { "scrutineer": { "role": "REQ", "asil": "D", "superseded": false } },
+      "fields": {
+        "summary": "Brake pedal plausibility",
+        "status": { "name": "In Progress", "statusCategory": { "key": "indeterminate" } },
+        "issuetype": { "name": "Task" },
+        "fixVersions": [{ "name": "BBW 2.3" }, { "name": "BBW 2.4" }],
+        "assignee": { "accountId": "acc-1", "displayName": "Alice" },
+        "updated": "2026-11-02T10:00:00.000+0000",
+        "issuelinks": [
+          { "type": { "name": "Scrutineer Mitigates", "inward": "is mitigated by", "outward": "mitigates" }, "outwardIssue": { "key": "BBW-1" } },
+          { "type": { "name": "Scrutineer Verifies", "inward": "is verified by", "outward": "verifies" }, "inwardIssue": { "key": "BBW-3" } },
+          { "type": { "name": "Relates", "inward": "relates to", "outward": "relates to" }, "outwardIssue": { "key": "BBW-9" } }
+        ]
+      }
+    },
+    {
+      "key": "BBW-3",
+      "properties": {},
+      "fields": {
+        "summary": "Verify pedal plausibility",
+        "status": { "name": "To Do", "statusCategory": { "key": "new" } },
+        "issuetype": { "name": "Test Case" },
+        "fixVersions": [],
+        "updated": "2026-11-03T10:00:00.000+0000",
+        "issuelinks": [
+          { "type": { "name": "Scrutineer Verifies", "inward": "is verified by", "outward": "verifies" }, "outwardIssue": { "key": "BBW-2" } },
+          { "type": { "name": "Scrutineer Verifies", "inward": "is verified by", "outward": "verifies" }, "outwardIssue": { "key": "BBW-2" } }
+        ]
+      }
+    },
+    {
+      "key": "BBW-4",
+      "properties": {},
+      "fields": {
+        "summary": "Unrelated task",
+        "status": { "name": "To Do", "statusCategory": { "key": "new" } },
+        "issuetype": { "name": "Task" },
+        "fixVersions": [],
+        "updated": "2026-11-03T10:00:00.000+0000",
+        "issuelinks": []
+      }
+    },
+    {
+      "key": "BBW-5",
+      "properties": { "scrutineer": { "role": "DEF", "severity": "Major" } },
+      "fields": {
+        "summary": "CAN timeout",
+        "status": { "name": "Open", "statusCategory": { "key": "new" } },
+        "issuetype": { "name": "Bug" },
+        "fixVersions": [],
+        "updated": "2026-11-03T10:00:00.000+0000",
+        "issuelinks": [
+          { "type": { "name": "Blocks", "inward": "is blocked by", "outward": "blocks" }, "outwardIssue": { "key": "BBW-2" } }
+        ]
+      }
+    }
+  ]
+}
