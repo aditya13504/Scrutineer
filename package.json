@@ -1,0 +1,25 @@
+{
+  "name": "scrutineer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scrutineer: traceability release gate for safety-critical software on Atlassian Forge",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:ui": "npm --prefix static/app test",
+    "build:ui": "npm --prefix static/app run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@forge/api": "^8.4.0",
+    "@forge/events": "^3.0.9",
+    "@forge/kvs": "^2.1.1",
+    "@forge/resolver": "^2.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
