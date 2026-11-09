@@ -26,7 +26,7 @@ export function Admin() {
   const curl = ingest ? `curl -X POST "${ingest.url}" \\
   -H "Content-Type: application/json" \\
   -H "x-scrutineer-token: ${token}" \\
-  -d '{"projectKey":"${settings.defaultProject ?? 'BBW'}","version":"BBW 2.3","runId":"1181","runUrl":"https://ci.example.com/hil/1181","results":[{"testKey":"BBW-40","result":"passed"}]}'` : '';
+  -d '{"projectKey":"${settings.defaultProject ?? 'BBW'}","version":"BBW 2.3","runId":"1181","runUrl":"https://ci.example.com/hil/1181","results":[{"testKey":"BBW-56","result":"passed"}]}'` : '';
 
   return (
     <div className="admin">

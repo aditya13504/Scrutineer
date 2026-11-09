@@ -2,4 +2,295 @@ app:
   id: ari:cloud:ecosystem::app/00000000-0000-0000-0000-000000000000
   runtime:
     name: nodejs24.x
-modules: {}
+
+modules:
+  jira:projectPage:
+    - key: control-room
+      title: Scrutineer
+      icon: resource:main;icon.svg
+      resource: main
+      resolver:
+        function: resolver
+      layout: basic
+
+  jira:issuePanel:
+    - key: trace-panel
+      title: Scrutineer trace
+      icon: resource:main;icon.svg
+      resource: main
+      resolver:
+        function: resolver
+      viewportSize: medium
+
+  jira:adminPage:
+    - key: admin
+      title: Scrutineer
+      icon: resource:main;icon.svg
+      resource: main
+      resolver:
+        function: resolver
+
+  rovo:agent:
+    - key: scrutineer-agent
+      name: Scrutineer
+      description: Checks whether a safety-critical release is ready to ship (ISO 26262 traceability), explains gaps and drafts fixes for your approval.
+      icon: resource:main;icon.svg
+      prompt: resource:prompts;agent.md
+      conversationStarters:
+        - Is the current release ready to ship?
+        - Why is the release gate red?
+        - Draft the missing test case
+        - What breaks if I change this requirement?
+      actions:
+        - get-release-readiness
+        - list-findings
+        - explain-finding
+        - trace-impact
+        - draft-test-case
+        - create-linked-test
+        - link-issues
+        - publish-evidence-pack
+
+  action:
+    - key: get-release-readiness
+      name: Get release readiness
+      function: fn-readiness
+      actionVerb: GET
+      description: Returns the release gate verdict (GO, AT_RISK, NO_GO), readiness score, coverage stats and all findings for a release. Without inputs it uses the default project and its next unreleased version.
+      inputs:
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: Jira project key, for example BBW.
+        release:
+          title: Release
+          type: string
+          required: false
+          description: Jira fix version name, for example BBW 2.3.
+    - key: list-findings
+      name: List findings
+      function: fn-findings
+      actionVerb: GET
+      description: Lists every open finding for a release with rule id, severity, message and the issue keys involved.
+      inputs:
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: Jira project key.
+        release:
+          title: Release
+          type: string
+          required: false
+          description: Jira fix version name.
+    - key: explain-finding
+      name: Explain finding
+      function: fn-explain
+      actionVerb: GET
+      description: Explains one finding (by id such as R4:BBW-12, or by issue key) with the rule, the ISO 26262 clause, the evidence issues and how to fix it.
+      inputs:
+        findingId:
+          title: Finding id
+          type: string
+          required: false
+          description: Finding id like R4:BBW-12.
+        issueKey:
+          title: Issue key
+          type: string
+          required: false
+          description: An issue key involved in the finding.
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: Jira project key.
+        release:
+          title: Release
+          type: string
+          required: false
+          description: Jira fix version name.
+    - key: trace-impact
+      name: Trace impact
+      function: fn-impact
+      actionVerb: GET
+      description: Shows everything upstream and downstream of an issue in the safety trace, and which test cases would become suspect if it changed.
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: true
+          description: The hazard, requirement, decision, implementation or test issue key.
+    - key: draft-test-case
+      name: Draft test case
+      function: fn-draft
+      actionVerb: GET
+      description: Drafts (does not create) a verification test case for a safety requirement. Show the draft to the user before creating anything.
+      inputs:
+        requirementKey:
+          title: Requirement key
+          type: string
+          required: true
+          description: The safety requirement issue key.
+    - key: create-linked-test
+      name: Create linked test case
+      function: fn-create-test
+      actionVerb: CREATE
+      description: Creates a test case for a safety requirement and links it with "verifies". Only call after the user explicitly approved the draft.
+      inputs:
+        requirementKey:
+          title: Requirement key
+          type: string
+          required: true
+          description: The safety requirement issue key.
+        summary:
+          title: Summary
+          type: string
+          required: false
+          description: Approved test case summary.
+        steps:
+          title: Steps
+          type: string
+          required: false
+          description: Approved steps, one per line.
+        expected:
+          title: Expected result
+          type: string
+          required: false
+          description: Approved expected result.
+        release:
+          title: Release
+          type: string
+          required: false
+          description: Fix version for the test case.
+    - key: link-issues
+      name: Link trace items
+      function: fn-link
+      actionVerb: CREATE
+      description: Creates a trace link between two Scrutineer items (mitigates, implements, verifies, derivedFrom). Only call after the user explicitly approved it.
+      inputs:
+        fromKey:
+          title: From issue
+          type: string
+          required: true
+          description: Source issue, for example the test case in "TC verifies REQ".
+        toKey:
+          title: To issue
+          type: string
+          required: true
+          description: Target issue.
+        linkRole:
+          title: Link role
+          type: string
+          required: true
+          description: One of mitigates, implements, verifies, derivedFrom.
+    - key: publish-evidence-pack
+      name: Publish evidence pack
+      function: fn-publish
+      actionVerb: CREATE
+      description: Publishes a Confluence evidence pack (matrix, findings, suspect history, sign-offs, SHA-256 fingerprint) for a release. Only call after the user explicitly approved it.
+      inputs:
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: Jira project key.
+        release:
+          title: Release
+          type: string
+          required: false
+          description: Jira fix version name.
+        spaceKey:
+          title: Confluence space key
+          type: string
+          required: false
+          description: Space for the evidence pack. Defaults to the configured space.
+
+  rovo:mcp:
+    - key: scrutineer-mcp
+      name: Scrutineer
+      tools:
+        - get-release-readiness
+        - list-findings
+        - explain-finding
+        - trace-impact
+
+  trigger:
+    - key: issue-updated
+      function: fn-trigger
+      events:
+        - avi:jira:updated:issue
+      filter:
+        ignoreSelf: true
+
+  webtrigger:
+    - key: results-ingest
+      function: fn-ingest
+      response:
+        type: dynamic
+
+  jira:workflowValidator:
+    - key: release-guard
+      name: Scrutineer release gate
+      description: Blocks the transition when the issue is labelled release-gate and its release is NO-GO in Scrutineer.
+      function: fn-validator
+
+  consumer:
+    - key: demo-consumer
+      queue: demo-queue
+      function: fn-demo
+
+  function:
+    - key: resolver
+      handler: index.handler
+    - key: fn-readiness
+      handler: index.getReleaseReadiness
+    - key: fn-findings
+      handler: index.listFindings
+    - key: fn-explain
+      handler: index.explainFindingAction
+    - key: fn-impact
+      handler: index.traceImpactAction
+    - key: fn-draft
+      handler: index.draftTestCaseAction
+    - key: fn-create-test
+      handler: index.createLinkedTestAction
+    - key: fn-link
+      handler: index.linkIssuesAction
+    - key: fn-publish
+      handler: index.publishEvidencePackAction
+    - key: fn-trigger
+      handler: index.onIssueUpdated
+    - key: fn-ingest
+      handler: index.onResultsIngest
+    - key: fn-validator
+      handler: index.validateRelease
+    - key: fn-demo
+      handler: index.onDemoJob
+      timeoutSeconds: 900
+
+resources:
+  - key: main
+    path: static/app/dist
+  - key: prompts
+    path: prompts
+
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+    - read:jira-user
+    - manage:jira-project
+    - manage:jira-configuration
+    - storage:app
+    - read:confluence-content.summary
+    - write:confluence-content
+    - read:confluence-space.summary
+    - write:confluence-space
+    - read:page:confluence
+    - write:page:confluence
+    - read:space:confluence
+    - write:space:confluence
+  content:
+    styles:
+      - unsafe-inline
