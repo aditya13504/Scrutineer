@@ -156,3 +156,14 @@ async function myPermission(permission: string, projectKey?: string): Promise<bo
 }
 export const isJiraAdmin = () => myPermission('ADMINISTER');
 export const canBrowseProject = (projectKey: string) => myPermission('BROWSE_PROJECTS', projectKey);
+
+let linkTypesReady = false;
+/** Creates any missing Scrutineer link types (idempotent; cached per function instance). */
+export async function ensureLinkTypes(): Promise<string[]> {
+  if (linkTypesReady) return [];
+  const have = new Set((await listLinkTypes()).map((t) => t.name));
+  const made: string[] = [];
+  for (const t of Object.values(LINK_TYPES)) if (!have.has(t.name)) { await createLinkType(t); made.push(t.name); }
+  linkTypesReady = true;
+  return made;
+}

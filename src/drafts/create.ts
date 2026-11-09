@@ -1,9 +1,10 @@
 import { badge, type TraceItem } from '../engine/types';
-import { adfText, createIssue, createLink, setIssueProperty } from '../jira/client';
+import { adfText, createIssue, createLink, ensureLinkTypes, setIssueProperty } from '../jira/client';
 import { draftToDescription, type TestDraft } from './testDraft';
 
 /** Creates a Test Case issue from an approved draft and links it "verifies" the requirement. */
 export async function createLinkedTest(projectKey: string, req: TraceItem, draft: TestDraft, release: string, demo: boolean, who: 'app' | 'user' = 'user'): Promise<string> {
+  await ensureLinkTypes();
   const created = await createIssue({
     project: { key: projectKey },
     issuetype: { name: 'Task' },

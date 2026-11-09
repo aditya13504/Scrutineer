@@ -1,7 +1,7 @@
 // Rovo agent actions (also exposed as MCP tools where read-only). Inputs arrive as top-level payload keys.
 import { badge, type LinkRole } from '../engine/types';
 import { publishEvidencePack } from '../evidence/publish';
-import { canBrowseProject, createLink, isJiraAdmin } from '../jira/client';
+import { canBrowseProject, createLink, ensureLinkTypes, isJiraAdmin } from '../jira/client';
 import { authorizeProject } from './guards';
 import { buildSnapshot } from '../snapshot/build';
 import { actorOf, createTestFor, draftTest, explainFinding, getReadiness, resolveProject, resolveRelease, traceImpact } from '../service';
@@ -87,6 +87,7 @@ export const linkIssuesAction = (p: ActionPayload) => safe('link-issues', async 
   const a = snap.items[from];
   const b = snap.items[to];
   if (!a || !b) throw new Error('Both issues must be Scrutineer trace items.');
+  await ensureLinkTypes();
   await createLink(role, from, to, 'user');
   return { summary: `Linked: ${badge(a)} ${role === 'derivedFrom' ? 'is derived from' : role} ${badge(b)}.` };
 });
