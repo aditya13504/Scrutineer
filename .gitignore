@@ -3,3 +3,4 @@ static/app/dist/
 .env
 .superpowers/
 coverage/
+temp.pdf
