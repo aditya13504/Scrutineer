@@ -52,7 +52,9 @@ Any blocking finding makes the release **NO-GO**. Only major or minor findings m
 
 ## Try it in five minutes
 
-1. Install the app on a site with Jira and Confluence (Rovo is optional).
+Demo video: https://youtu.be/VThER_HuGjM
+
+1. Install the app on a site with Jira and Confluence (Rovo is optional) with the [installation link](https://developer.atlassian.com/console/install/9b7a0161-7786-48ea-9a1d-931dab7f3925?signature=AYABeDOg9jVf4AE8BecD%2Bughhg0AAAADAAdhd3Mta21zAEthcm46YXdzOmttczp1cy13ZXN0LTI6NzA5NTg3ODM1MjQzOmtleS83MDVlZDY3MC1mNTdjLTQxYjUtOWY5Yi1lM2YyZGNjMTQ2ZTcAuAECAQB4CxqLTo9l4lqXuFjNim1xJM%2Bp%2F3TVP9xHS2BrU5DRRucBtU6WnhylWj6TSOaS0VThvQAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDAMMU87VZeHEs4Es3gIBEIA7dNwp03Tk0g%2FUamK7pIhwIsFUJX9NxAs%2BxOGhoRk2Y7DCTc5h%2BgN4FcvbyZMDYuS9CFEgP1M1d5rwlpwAB2F3cy1rbXMAS2Fybjphd3M6a21zOmV1LXdlc3QtMTo3MDk1ODc4MzUyNDM6a2V5LzQ2MzBjZTZiLTAwYzMtNGRlMi04NzdiLTYyN2UyMDYwZTVjYwC4AQICAHi9bVMAkme4qVQX1fQHo6ePw3H40A7cGfz7yrmSfBWMXgHWiOx9Ad0aUNT1bw%2Bs7uanAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMcJDF6zJJkJ8CT8K%2FAgEQgDuKDoj8nGp%2BNihI%2FrMaNNl2UhtdeZzfJ%2BcdXE7YnOoAt9fh%2FY5GY2hNw3VKrfRGCEv%2F6EW7Tzo4W%2BZybgAHYXdzLWttcwBLYXJuOmF3czprbXM6dXMtZWFzdC0xOjcwOTU4NzgzNTI0MzprZXkvNmMxMjBiYTAtNGNkNS00OTg1LWI4MmUtNDBhMDQ5NTJjYzU3ALgBAgIAeDYASx0XCjkny4iLV6vz%2BKtEGSGT6kdt0QRpkn6D%2FlVEAVAz54%2BBuaQXXeWyytBxKToAAAB%2BMHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxNQrxENH7IzfLGbHsCARCAO4XOrB3pVtJ4J%2B6qHCMgo1vpJmdt6ezPG8ziF8kq9d2f3wKmKjalC0nJffifVj6Q2cga029Tv5Kz2xCGAgAAAAAMAAAQAAAAAAAAAAAAAAAAAOPsOp9Dszr%2FMnP8%2F9EbYpP%2F%2F%2F%2F%2FAAAAAQAAAAAAAAAAAAAAAQAAADLiFuuCAicWeqnKyc%2FxixR%2Fog09b5BcSlhpG3d1DbQWhGB5jwCPv4NdxtynVDGhtIfruTdU%2BL3sZgmDo3JpIl%2Fy6Js%3D&product=jira&product=confluence).
 2. Go to **Jira settings → Apps → Scrutineer** and click **Load demo project**. It takes about a minute and creates:
    - the `BBW` (Brake-by-Wire ECU) project with 6 hazards, 2 safety decisions and 21 safety requirements
    - implementation stories, 21 test cases with HIL results, and a defect
