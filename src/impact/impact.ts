@@ -57,19 +57,20 @@ export function flagsForChange(snap: TraceSnapshot, changedKey: string, changedB
 }
 
 /** Adds new flags; an unresolved flag for the same test/upstream pair is refreshed (newer change time) rather than duplicated. */
-export function mergeFlags(existing: SuspectFlag[], incoming: SuspectFlag[]): { flags: SuspectFlag[]; added: number } {
+export function mergeFlags(existing: SuspectFlag[], incoming: SuspectFlag[]): { flags: SuspectFlag[]; added: number; refreshed: number } {
   const flags = existing.map((f) => ({ ...f }));
   let added = 0;
+  let refreshed = 0;
   for (const n of incoming) {
     const open = flags.find((f) => f.testKey === n.testKey && f.upstreamKey === n.upstreamKey && !f.resolved);
     if (open) {
-      if (n.changedAt > open.changedAt) Object.assign(open, { changedAt: n.changedAt, changedBy: n.changedBy, reason: n.reason });
+      if (n.changedAt > open.changedAt) { Object.assign(open, { changedAt: n.changedAt, changedBy: n.changedBy, reason: n.reason }); refreshed++; }
       continue;
     }
     flags.push(n);
     added++;
   }
-  return { flags, added };
+  return { flags, added, refreshed };
 }
 
 export function resolveByReview(flags: SuspectFlag[], upstreamKey: string | undefined, actor: string, justification: string, at: string): SuspectFlag[] {

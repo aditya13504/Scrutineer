@@ -50,6 +50,7 @@ describe('impact', () => {
     const first = flagsForChange(s, 'R1', 'c', AT, ['summary']).filter((f) => f.testKey === 'T1');
     const merged = mergeFlags(first, flagsForChange(s, 'R1', 'c', '2026-11-07T00:00:00.000Z', ['summary']).filter((f) => f.testKey === 'T1'));
     expect(merged.added).toBe(0);
+    expect(merged.refreshed).toBe(1); // a newer change to an open flag counts as a refresh
     expect(merged.flags).toHaveLength(1);
     const resolved = resolveByReview(merged.flags, 'R1', 'dave', 'Wording only.', '2026-11-07T01:00:00.000Z');
     const again = mergeFlags(resolved, flagsForChange(s, 'R1', 'c', '2026-11-08T00:00:00.000Z', ['summary']).filter((f) => f.testKey === 'T1'));

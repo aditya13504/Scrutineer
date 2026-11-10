@@ -38,7 +38,7 @@ Scrutineer turns Jira into a scrutineering bay:
 ## How we built it
 
 - **Forge app** in TypeScript on the Node 24 runtime. One React Custom UI serves three modules: `jira:projectPage`, `jira:issuePanel` and `jira:adminPage`.
-- **A pure rule engine** with no Forge imports, developed test-first: 111 unit tests across the engine, mapping, impact analysis, ingestion, the demo dataset, the evidence renderer and the UI.
+- **A pure rule engine** with no Forge imports, developed test-first: 114 unit tests across the engine, mapping, impact analysis, ingestion, the demo dataset, the evidence renderer and the UI.
 - **Real Jira data model:**
   - Trace items are ordinary issues with a `scrutineer` issue property.
   - Trace links are real Jira issue links.

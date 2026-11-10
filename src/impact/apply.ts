@@ -4,15 +4,16 @@ import { buildSnapshot } from '../snapshot/build';
 import { getSuspects, putSuspects } from '../store/state';
 import { flagsForChange, mergeFlags, resolveByReview } from './impact';
 
-/** Flags downstream tests as suspect after an upstream change and comments on each newly flagged test. */
+/** Flags downstream tests as suspect after an upstream change and comments on each test that is newly flagged
+ *  or whose open flag a newer change refreshed (so the team hears about every change, not just the first). */
 export async function applyChangeImpact(projectKey: string, changedKey: string, actorName: string, at: string, fields: string[]): Promise<string[]> {
   const snap = await buildSnapshot(projectKey, '');
   const flags = flagsForChange(snap, changedKey, actorName, at, fields);
   const flagged: string[] = [];
   for (const f of flags) {
-    const { flags: merged, added } = mergeFlags(await getSuspects(f.testKey), [f]);
+    const { flags: merged, added, refreshed } = mergeFlags(await getSuspects(f.testKey), [f]);
     await putSuspects(f.testKey, merged);
-    if (added) {
+    if (added || refreshed) {
       flagged.push(f.testKey);
       const up = snap.items[changedKey];
       await addComment(f.testKey,
